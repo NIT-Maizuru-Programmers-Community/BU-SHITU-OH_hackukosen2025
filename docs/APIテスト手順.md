@@ -207,6 +207,22 @@ curl -X POST http://localhost:3000/api/attendance/check-in \
   -d "{
     \"userId\": \"$TEST_USER_ID\"
   }"
+
+# レース完了（レースIDは事前に作成が必要）
+curl -X POST http://localhost:3000/api/race/complete \
+  -H "X-API-Key: $HARDWARE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"raceId\": \"race_2025-12-14\",
+    \"winnerId\": \"$TEST_USER_ID\",
+    \"results\": [
+      {
+        \"userId\": \"$TEST_USER_ID\",
+        \"rank\": 1,
+        \"stayDuration\": 14400
+      }
+    ]
+  }"
 ```
 
 ### ステップ 4: ユーザー認証 API のテスト
@@ -384,4 +400,3 @@ npm install --save-dev jest @types/jest ts-jest supertest @types/supertest
 8. ✅ Firestore でデータを確認
 
 すべてのテストが成功すれば、API は正常に動作しています！
-

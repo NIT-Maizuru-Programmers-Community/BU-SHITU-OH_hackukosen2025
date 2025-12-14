@@ -9,7 +9,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingScreen } from "@/components/ui/loading-spinner";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useAuth } from "@/hooks/useAuth";
-import { useFilteredPointHistory, PointHistoryType } from "@/hooks/usePointHistory";
+import {
+	useFilteredPointHistory,
+	PointHistoryType,
+} from "@/hooks/usePointHistory";
 import {
 	History,
 	TrendingUp,
@@ -20,7 +23,7 @@ import {
 
 export default function HistoryPage() {
 	const { user } = useAuth();
-	const [filter, setFilter] = useState<'all' | 'earned' | 'spent'>('all');
+	const [filter, setFilter] = useState<"all" | "earned" | "spent">("all");
 	const { history, loading } = useFilteredPointHistory(user?.id, filter);
 
 	if (loading) {
@@ -55,12 +58,12 @@ export default function HistoryPage() {
 	};
 
 	const formatDate = (date: Date) => {
-		return date.toLocaleString('ja-JP', {
-			year: 'numeric',
-			month: '2-digit',
-			day: '2-digit',
-			hour: '2-digit',
-			minute: '2-digit',
+		return date.toLocaleString("ja-JP", {
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit",
+			hour: "2-digit",
+			minute: "2-digit",
 		});
 	};
 
@@ -68,10 +71,12 @@ export default function HistoryPage() {
 		<ProtectedRoute>
 			<PageContainer>
 				<Section icon={History} title='ポイント履歴'>
-					<Tabs 
-						defaultValue='all' 
+					<Tabs
+						defaultValue='all'
 						className='w-full'
-						onValueChange={(value) => setFilter(value as 'all' | 'earned' | 'spent')}
+						onValueChange={(value) =>
+							setFilter(value as "all" | "earned" | "spent")
+						}
 					>
 						<TabsList className='grid w-full grid-cols-3'>
 							<TabsTrigger value='all'>すべて</TabsTrigger>
@@ -100,12 +105,16 @@ export default function HistoryPage() {
 														<div className='flex items-center gap-3 flex-1 min-w-0'>
 															<div
 																className={`p-2 rounded-full ${
-																	isPositive ? "bg-green-500/10" : "bg-red-500/10"
+																	isPositive
+																		? "bg-green-500/10"
+																		: "bg-red-500/10"
 																}`}
 															>
 																<Icon
 																	className={`w-4 h-4 ${
-																		isPositive ? "text-green-600" : "text-red-600"
+																		isPositive
+																			? "text-green-600"
+																			: "text-red-600"
 																	}`}
 																/>
 															</div>
@@ -224,6 +233,3 @@ export default function HistoryPage() {
 		</ProtectedRoute>
 	);
 }
-
-
-

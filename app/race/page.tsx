@@ -33,13 +33,21 @@ export default function RacePage() {
 							<div className='flex items-center justify-between'>
 								<CardTitle className='text-lg'>今日のレース</CardTitle>
 								{todayRace && (
-									<StatusBadge 
-										status={todayRace.status === 'open' ? 'pending' : todayRace.status === 'finished' ? 'success' : 'warning'} 
+									<StatusBadge
+										status={
+											todayRace.status === "open"
+												? "pending"
+												: todayRace.status === "finished"
+												? "success"
+												: "warning"
+										}
 										label={
-											todayRace.status === 'open' ? 'エントリー中' : 
-											todayRace.status === 'closed' ? '進行中' : 
-											'終了'
-										} 
+											todayRace.status === "open"
+												? "エントリー中"
+												: todayRace.status === "closed"
+												? "進行中"
+												: "終了"
+										}
 									/>
 								)}
 							</div>
@@ -47,10 +55,11 @@ export default function RacePage() {
 								<div className='flex items-center gap-2 text-sm text-muted-foreground'>
 									<Clock className='w-4 h-4' />
 									<span>
-										{todayRace.startTime.toLocaleTimeString('ja-JP', { 
-											hour: '2-digit', 
-											minute: '2-digit' 
-										})} 開始予定
+										{todayRace.startTime.toLocaleTimeString("ja-JP", {
+											hour: "2-digit",
+											minute: "2-digit",
+										})}{" "}
+										開始予定
 									</span>
 								</div>
 							)}
@@ -70,9 +79,14 @@ export default function RacePage() {
 													className='flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors'
 												>
 													<div className='flex items-center gap-3 flex-1'>
-														<UserAvatar name={participant.displayName} size='md' />
+														<UserAvatar
+															name={participant.displayName}
+															size='md'
+														/>
 														<div>
-															<p className='font-medium'>{participant.displayName}</p>
+															<p className='font-medium'>
+																{participant.displayName}
+															</p>
 															<p className='text-xs text-muted-foreground'>
 																総ベット: {participant.totalBets} pt
 															</p>
@@ -82,7 +96,9 @@ export default function RacePage() {
 														<p className='text-lg font-bold text-primary'>
 															×{participant.odds.toFixed(1)}
 														</p>
-														<p className='text-xs text-muted-foreground'>オッズ</p>
+														<p className='text-xs text-muted-foreground'>
+															オッズ
+														</p>
 													</div>
 												</div>
 											))
@@ -133,7 +149,9 @@ export default function RacePage() {
 									) : (
 										<div className='space-y-3'>
 											{pastRaces.map((race) => {
-												const winner = race.participants.find(p => p.rank === 1);
+												const winner = race.participants.find(
+													(p) => p.rank === 1
+												);
 												return (
 													<div
 														key={race.id}
@@ -148,7 +166,9 @@ export default function RacePage() {
 														<div className='flex items-center justify-between'>
 															<div>
 																<p className='font-medium'>
-																	{winner ? `${winner.displayName} が優勝` : '結果集計中'}
+																	{winner
+																		? `${winner.displayName} が優勝`
+																		: "結果集計中"}
 																</p>
 															</div>
 														</div>

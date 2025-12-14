@@ -71,8 +71,8 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
-		// ログインボーナス付与（10pt）
-		const bonusPoints = 10;
+		// ログインボーナス付与（100pt）
+		const bonusPoints = 100;
 		const result = await awardPoints(
 			userId,
 			bonusPoints,
@@ -96,4 +96,3 @@ export async function POST(req: NextRequest) {
 		return serverError();
 	}
 }
-

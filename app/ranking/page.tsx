@@ -40,7 +40,9 @@ export default function RankingPage() {
 										size='xl'
 										className='mb-3'
 									/>
-									<h2 className='text-2xl font-bold mb-1'>{currentKing.displayName}</h2>
+									<h2 className='text-2xl font-bold mb-1'>
+										{currentKing.displayName}
+									</h2>
 									<PointBadge points={currentKing.points} size='lg' />
 									<p className='text-sm text-muted-foreground mt-3'>
 										現在の部室王
@@ -49,7 +51,9 @@ export default function RankingPage() {
 							) : (
 								<div className='flex flex-col items-center text-center py-8'>
 									<Crown className='w-12 h-12 text-muted-foreground mb-4' />
-									<p className='text-muted-foreground'>まだランキングがありません</p>
+									<p className='text-muted-foreground'>
+										まだランキングがありません
+									</p>
 								</div>
 							)}
 						</CardContent>
@@ -82,7 +86,9 @@ export default function RankingPage() {
 														<RankBadge rank={user.rank} />
 														<UserAvatar name={user.displayName} size='md' />
 														<div className='flex-1 min-w-0'>
-															<p className='font-medium truncate'>{user.displayName}</p>
+															<p className='font-medium truncate'>
+																{user.displayName}
+															</p>
 														</div>
 													</div>
 													<PointBadge points={user.points} />
@@ -117,6 +123,3 @@ export default function RankingPage() {
 		</ProtectedRoute>
 	);
 }
-
-
-

@@ -45,9 +45,7 @@ export default function AttendancePage() {
 					<Card>
 						<CardHeader>
 							<div className='flex items-center justify-between'>
-								<CardTitle className='text-lg'>
-									{count} 人在室中
-								</CardTitle>
+								<CardTitle className='text-lg'>{count} 人在室中</CardTitle>
 								<div className='flex items-center gap-2'>
 									<div className='w-2 h-2 bg-green-500 rounded-full animate-pulse' />
 									<span className='text-sm text-muted-foreground'>
@@ -82,10 +80,14 @@ export default function AttendancePage() {
 													<div className='flex items-center gap-1 text-xs text-muted-foreground'>
 														<Clock className='w-3 h-3' />
 														<span>
-															{attendee.checkInTime.toLocaleTimeString('ja-JP', { 
-																hour: '2-digit', 
-																minute: '2-digit' 
-															})} 入室
+															{attendee.checkInTime.toLocaleTimeString(
+																"ja-JP",
+																{
+																	hour: "2-digit",
+																	minute: "2-digit",
+																}
+															)}{" "}
+															入室
 														</span>
 													</div>
 												</div>
