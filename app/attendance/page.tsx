@@ -5,47 +5,22 @@ import { Section } from "@/components/layout/section";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { LoadingScreen } from "@/components/ui/loading-spinner";
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { useCurrentAttendance, formatDuration } from "@/hooks/useAttendance";
 import { Users, Clock, Calendar, Info } from "lucide-react";
 
 export default function AttendancePage() {
 	// NOTE: 在室情報は部室の端末でNFCをかざすことで記録されます
-	// TODO: 実際のデータはFirestoreから取得
-	const mockCurrentAttendees = [
-		{
-			id: "1",
-			name: "佐藤花子",
-			checkInTime: "09:00",
-			duration: 180,
-			isOnline: true,
-		},
-		{
-			id: "2",
-			name: "鈴木一郎",
-			checkInTime: "10:30",
-			duration: 90,
-			isOnline: true,
-		},
-		{
-			id: "3",
-			name: "田中次郎",
-			checkInTime: "11:15",
-			duration: 45,
-			isOnline: true,
-		},
-	];
+	const { attendees, loading, count } = useCurrentAttendance();
 
-	const mockAttendanceHistory = [
-		{ date: "2025-12-11", duration: 180, members: 5 },
-		{ date: "2025-12-10", duration: 240, members: 8 },
-		{ date: "2025-12-09", duration: 120, members: 4 },
-	];
-
-	const formatDuration = (minutes: number) => {
-		const hours = Math.floor(minutes / 60);
-		const mins = minutes % 60;
-		return hours > 0 ? `${hours}時間${mins}分` : `${mins}分`;
-	};
+	if (loading) {
+		return (
+			<ProtectedRoute>
+				<LoadingScreen />
+			</ProtectedRoute>
+		);
+	}
 
 	return (
 		<ProtectedRoute>
@@ -71,7 +46,7 @@ export default function AttendancePage() {
 						<CardHeader>
 							<div className='flex items-center justify-between'>
 								<CardTitle className='text-lg'>
-									{mockCurrentAttendees.length} 人在室中
+									{count} 人在室中
 								</CardTitle>
 								<div className='flex items-center gap-2'>
 									<div className='w-2 h-2 bg-green-500 rounded-full animate-pulse' />
@@ -82,7 +57,7 @@ export default function AttendancePage() {
 							</div>
 						</CardHeader>
 						<CardContent>
-							{mockCurrentAttendees.length === 0 ? (
+							{attendees.length === 0 ? (
 								<EmptyState
 									icon={Users}
 									title='誰もいません'
@@ -90,23 +65,28 @@ export default function AttendancePage() {
 								/>
 							) : (
 								<div className='space-y-3'>
-									{mockCurrentAttendees.map((attendee) => (
+									{attendees.map((attendee) => (
 										<div
-											key={attendee.id}
+											key={attendee.uid}
 											className='flex items-center justify-between p-4 rounded-lg bg-muted/50'
 										>
 											<div className='flex items-center gap-3'>
 												<UserAvatar
-													name={attendee.name}
+													name={attendee.displayName}
 													size='md'
 													showOnlineIndicator
 													isOnline={attendee.isOnline}
 												/>
 												<div>
-													<p className='font-medium'>{attendee.name}</p>
+													<p className='font-medium'>{attendee.displayName}</p>
 													<div className='flex items-center gap-1 text-xs text-muted-foreground'>
 														<Clock className='w-3 h-3' />
-														<span>{attendee.checkInTime} 入室</span>
+														<span>
+															{attendee.checkInTime.toLocaleTimeString('ja-JP', { 
+																hour: '2-digit', 
+																minute: '2-digit' 
+															})} 入室
+														</span>
 													</div>
 												</div>
 											</div>
@@ -130,27 +110,9 @@ export default function AttendancePage() {
 				<Section icon={Calendar} title='在室履歴'>
 					<Card>
 						<CardContent className='pt-6'>
-							<div className='space-y-2'>
-								{mockAttendanceHistory.map((record, index) => (
-									<div
-										key={index}
-										className='flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors'
-									>
-										<div>
-											<p className='font-medium'>{record.date}</p>
-											<p className='text-sm text-muted-foreground'>
-												{record.members} 人参加
-											</p>
-										</div>
-										<div className='text-right'>
-											<p className='text-sm font-semibold'>
-												{formatDuration(record.duration)}
-											</p>
-											<p className='text-xs text-muted-foreground'>在室時間</p>
-										</div>
-									</div>
-								))}
-							</div>
+							<p className='text-center text-muted-foreground py-8'>
+								在室履歴機能は近日実装予定です
+							</p>
 						</CardContent>
 					</Card>
 				</Section>
