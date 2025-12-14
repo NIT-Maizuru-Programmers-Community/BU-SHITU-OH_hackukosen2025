@@ -1,65 +1,198 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { PageContainer } from "@/components/layout/page-container";
+import { Section } from "@/components/layout/section";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PointBadge } from "@/components/ui/point-badge";
+import { RankBadge } from "@/components/ui/rank-badge";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { Button } from "@/components/ui/button";
+import { LoadingScreen } from "@/components/ui/loading-spinner";
+import { useAuth } from "@/hooks/useAuth";
+import { Trophy, Flag, Users, TrendingUp, ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+	const { user, loading } = useAuth();
+	const router = useRouter();
+
+	useEffect(() => {
+		if (!loading && !user) {
+			router.push("/login");
+		}
+	}, [user, loading, router]);
+
+	if (loading) {
+		return <LoadingScreen />;
+	}
+
+	if (!user) {
+		return <LoadingScreen label='リダイレクト中...' />;
+	}
+
+	const mockAttendees = [
+		{ id: "1", name: "佐藤花子", isOnline: true },
+		{ id: "2", name: "鈴木一郎", isOnline: true },
+		{ id: "3", name: "田中次郎", isOnline: true },
+	];
+
+	const mockRanking = [
+		{ id: "1", name: "佐藤花子", points: 2500, rank: 1 },
+		{ id: "2", name: "鈴木一郎", points: 1800, rank: 2 },
+		{ id: "3", name: "山田太郎", points: 1250, rank: 3 },
+	];
+
+	const mockTodayRace = {
+		status: "upcoming",
+		startTime: "17:00",
+		participants: 8,
+	};
+
+	return (
+		<>
+			<PageContainer>
+				{/* ポイント表示エリア */}
+				<Card className='mb-6 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-primary/20'>
+					<CardContent className='pt-6'>
+						<div className='flex items-center justify-between'>
+							<div>
+								<p className='text-sm text-muted-foreground mb-1'>
+									あなたのポイント
+								</p>
+								<div className='flex items-center gap-3'>
+									<p className='text-4xl font-bold'>
+										{user.points.toLocaleString()}
+									</p>
+									<span className='text-2xl text-muted-foreground'>pt</span>
+								</div>
+								<div className='flex items-center gap-2 mt-2'>
+									<RankBadge rank={3} size='sm' />
+									<span className='text-sm text-muted-foreground'>
+										現在 3 位
+									</span>
+								</div>
+							</div>
+							<div className='text-right'>
+								<TrendingUp className='w-12 h-12 text-primary/40 mb-2' />
+								<PointBadge points={120} showTrend trend='up' size='sm' />
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+
+				{/* 在室者サマリー */}
+				<Section
+					title='現在の在室者'
+					icon={Users}
+					action={
+						<Link href='/attendance'>
+							<Button variant='ghost' size='sm'>
+								詳細 <ChevronRight className='w-4 h-4 ml-1' />
+							</Button>
+						</Link>
+					}
+					className='mb-6'
+				>
+					<Card>
+						<CardContent className='pt-6'>
+							<div className='flex items-center gap-3 mb-4'>
+								<div className='flex items-center gap-2'>
+									<div className='w-2 h-2 bg-green-500 rounded-full animate-pulse' />
+									<span className='text-sm font-medium'>
+										{mockAttendees.length} 人在室中
+									</span>
+								</div>
+							</div>
+							<div className='flex items-center gap-3 overflow-x-auto pb-2'>
+								{mockAttendees.map((attendee) => (
+									<div
+										key={attendee.id}
+										className='flex flex-col items-center gap-1 flex-shrink-0'
+									>
+										<UserAvatar
+											name={attendee.name}
+											size='md'
+											showOnlineIndicator
+											isOnline={attendee.isOnline}
+										/>
+										<span className='text-xs text-muted-foreground truncate max-w-[60px]'>
+											{attendee.name}
+										</span>
+									</div>
+								))}
+							</div>
+						</CardContent>
+					</Card>
+				</Section>
+
+				{/* ランキングサマリー */}
+				<Section
+					title='ランキング'
+					icon={Trophy}
+					action={
+						<Link href='/ranking'>
+							<Button variant='ghost' size='sm'>
+								詳細 <ChevronRight className='w-4 h-4 ml-1' />
+							</Button>
+						</Link>
+					}
+					className='mb-6'
+				>
+					<Card>
+						<CardContent className='pt-6'>
+							<div className='space-y-3'>
+								{mockRanking.map((user) => (
+									<div
+										key={user.id}
+										className='flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors'
+									>
+										<div className='flex items-center gap-3'>
+											<RankBadge rank={user.rank} />
+											<UserAvatar name={user.name} size='sm' />
+											<span className='font-medium'>{user.name}</span>
+										</div>
+										<PointBadge points={user.points} size='sm' />
+									</div>
+								))}
+							</div>
+						</CardContent>
+					</Card>
+				</Section>
+
+				{/* 本日のレース */}
+				<Section
+					title='本日のレース'
+					icon={Flag}
+					action={
+						<Link href='/race'>
+							<Button variant='ghost' size='sm'>
+								詳細 <ChevronRight className='w-4 h-4 ml-1' />
+							</Button>
+						</Link>
+					}
+				>
+					<Card>
+						<CardContent className='pt-6'>
+							<div className='text-center py-4'>
+								<Flag className='w-12 h-12 text-primary mx-auto mb-3' />
+								<h3 className='text-lg font-semibold mb-2'>
+									{mockTodayRace.startTime} 開始予定
+								</h3>
+								<p className='text-sm text-muted-foreground mb-4'>
+									参加者: {mockTodayRace.participants} 人
+								</p>
+								<Link href='/race'>
+									<Button className='w-full' size='lg'>
+										詳細を見る
+									</Button>
+								</Link>
+							</div>
+						</CardContent>
+					</Card>
+				</Section>
+			</PageContainer>
+		</>
+	);
 }
