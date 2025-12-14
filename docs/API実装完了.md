@@ -2,7 +2,7 @@
 
 ## 実装完了した API 一覧
 
-すべての API エンドポイント（18 個）の実装が完了しました。
+すべての API エンドポイント（19 個）の実装が完了しました。
 
 ### 認証 API（3 個）
 
@@ -17,28 +17,29 @@
 6. ✅ `GET /api/points/balance` - ポイント残高取得
 7. ✅ `GET /api/points/history` - ポイント履歴取得
 
-### レース管理 API（4 個）
+### レース管理 API（5 個）
 
 8. ✅ `GET /api/race/today` - 本日のレース情報取得
 9. ✅ `POST /api/race/bet` - レースベット
 10. ✅ `GET /api/race/result` - レース結果取得
 11. ✅ `POST /api/race/predict` - レース予想記録
+12. ✅ `POST /api/race/complete` - レース完了・配当計算（ハードウェア用）
 
 ### 送金 API（2 個）
 
-12. ✅ `POST /api/transfer/send` - ポイント送金
-13. ✅ `GET /api/transfer/history` - 送金履歴取得
+13. ✅ `POST /api/transfer/send` - ポイント送金
+14. ✅ `GET /api/transfer/history` - 送金履歴取得
 
 ### 在室管理 API（4 個）
 
-14. ✅ `POST /api/attendance/check-in` - チェックイン（入室）
-15. ✅ `POST /api/attendance/check-out` - チェックアウト（退室）
-16. ✅ `GET /api/attendance/current` - 在室者一覧取得
-17. ✅ `GET /api/attendance/history` - 出席履歴取得
+15. ✅ `POST /api/attendance/check-in` - チェックイン（入室）
+16. ✅ `POST /api/attendance/check-out` - チェックアウト（退室）
+17. ✅ `GET /api/attendance/current` - 在室者一覧取得
+18. ✅ `GET /api/attendance/history` - 出席履歴取得
 
 ### ランキング API（1 個）
 
-18. ✅ `GET /api/ranking` - ポイントランキング取得
+19. ✅ `GET /api/ranking` - ポイントランキング取得
 
 ## 実装した共通ユーティリティ
 
@@ -239,4 +240,3 @@ curl -X POST http://localhost:3000/api/transfer/send \
 
 5. **分析機能**
    - ポイント統計、レース分析などのレポート機能
-

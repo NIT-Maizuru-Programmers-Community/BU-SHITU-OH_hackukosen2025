@@ -104,3 +104,20 @@ export const checkInSchema = z.object({
 export const checkOutSchema = z.object({
 	userId: z.string().min(1, "ユーザーIDは必須です"),
 });
+
+/**
+ * レース完了のバリデーションスキーマ
+ */
+export const raceCompleteSchema = z.object({
+	raceId: z.string().min(1, "レースIDは必須です"),
+	winnerId: z.string().min(1, "勝者IDは必須です"),
+	results: z
+		.array(
+			z.object({
+				userId: z.string(),
+				rank: z.number().int().positive(),
+				stayDuration: z.number().int().nonnegative().optional(),
+			})
+		)
+		.optional(),
+});

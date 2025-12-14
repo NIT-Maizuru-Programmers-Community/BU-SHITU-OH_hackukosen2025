@@ -25,6 +25,7 @@ interface AuthContextType {
 	signIn: () => Promise<void>;
 	signOut: () => Promise<void>;
 	refreshUser: () => Promise<void>;
+	getToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -121,9 +122,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		}
 	};
 
+	const getToken = async (): Promise<string | null> => {
+		try {
+			if (!firebaseUser) {
+				console.warn("ユーザーがログインしていません");
+				return null;
+			}
+			return await firebaseUser.getIdToken();
+		} catch (error) {
+			console.error("トークン取得エラー:", error);
+			return null;
+		}
+	};
+
 	return (
 		<AuthContext.Provider
-			value={{ user, firebaseUser, loading, signIn, signOut, refreshUser }}
+			value={{
+				user,
+				firebaseUser,
+				loading,
+				signIn,
+				signOut,
+				refreshUser,
+				getToken,
+			}}
 		>
 			{children}
 		</AuthContext.Provider>
@@ -137,6 +159,3 @@ export function useAuth() {
 	}
 	return context;
 }
-
-
-

@@ -21,7 +21,7 @@ import Link from "next/link";
 export default function Home() {
 	const { user, loading } = useAuth();
 	const router = useRouter();
-	
+
 	// Firestoreからデータを取得
 	const { points } = useUserPoints(user?.id);
 	const { ranking } = useRanking(3); // トップ3のみ取得
@@ -156,7 +156,9 @@ export default function Home() {
 											<div className='flex items-center gap-3'>
 												<RankBadge rank={rankUser.rank} />
 												<UserAvatar name={rankUser.displayName} size='sm' />
-												<span className='font-medium'>{rankUser.displayName}</span>
+												<span className='font-medium'>
+													{rankUser.displayName}
+												</span>
 											</div>
 											<PointBadge points={rankUser.points} size='sm' />
 										</div>
@@ -186,25 +188,24 @@ export default function Home() {
 								{race ? (
 									<>
 										<h3 className='text-lg font-semibold mb-2'>
-											{race.startTime.toLocaleTimeString('ja-JP', { 
-												hour: '2-digit', 
-												minute: '2-digit' 
-											})} 開始予定
+											{race.startTime.toLocaleTimeString("ja-JP", {
+												hour: "2-digit",
+												minute: "2-digit",
+											})}{" "}
+											開始予定
 										</h3>
 										<p className='text-sm text-muted-foreground mb-1'>
 											参加者: {race.participants.length} 人
 										</p>
 										<p className='text-xs text-muted-foreground mb-4'>
-											{race.status === 'open' && 'エントリー受付中'}
-											{race.status === 'closed' && 'レース進行中'}
-											{race.status === 'finished' && 'レース終了'}
+											{race.status === "open" && "エントリー受付中"}
+											{race.status === "closed" && "レース進行中"}
+											{race.status === "finished" && "レース終了"}
 										</p>
 									</>
 								) : (
 									<>
-										<h3 className='text-lg font-semibold mb-2'>
-											本日のレース
-										</h3>
+										<h3 className='text-lg font-semibold mb-2'>本日のレース</h3>
 										<p className='text-sm text-muted-foreground mb-4'>
 											レース情報を読み込み中...
 										</p>
