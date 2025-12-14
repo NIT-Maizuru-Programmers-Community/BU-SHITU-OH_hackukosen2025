@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
 		if (!validationResult.success) {
 			return badRequest("リクエストが不正です", {
-				errors: validationResult.error.errors,
+				errors: validationResult.error.issues,
 			});
 		}
 
@@ -123,4 +123,3 @@ export async function POST(req: NextRequest) {
 		return serverError();
 	}
 }
-

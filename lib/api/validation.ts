@@ -26,12 +26,12 @@ export const awardPointsSchema = z.object({
 		.positive()
 		.max(10000, "ポイントは10000以下である必要があります"),
 	type: z.enum([
-		"login_bonus",
+		"daily_bonus",
+		"attendance",
 		"race_win",
-		"race_bet",
-		"transfer_receive",
+		"transfer_received",
+		"admin_adjustment",
 		"reset",
-		"manual",
 	]),
 	description: z.string().max(200, "説明は200文字以内である必要があります"),
 	relatedId: z.string().optional(),
@@ -104,4 +104,3 @@ export const checkInSchema = z.object({
 export const checkOutSchema = z.object({
 	userId: z.string().min(1, "ユーザーIDは必須です"),
 });
-
