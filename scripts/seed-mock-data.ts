@@ -185,7 +185,7 @@ async function seedBets() {
 	const races = racesSnapshot.docs.map((doc) => ({
 		id: doc.id,
 		...doc.data(),
-	}));
+	})) as Array<{ id: string; participants: any[]; [key: string]: any }>;
 
 	let betCount = 0;
 	const batchSize = 500;
