@@ -10,20 +10,20 @@ export interface Task {
 }
 
 export const useTaskStore = defineStore('task', () => {
-  const TOTAL_TASKS = 6
+  const TOTAL_TASKS = 9
   // 開発環境ではプロキシを使用、本番環境では直接アクセス
   const API_BASE_URL = '/api/attendance/today-count'
   const HARDWARE_API_KEY = 'Procon2025'
-
-  // 6つの画像に対応するタスク（縦3×横2のグリッド配置）
-  // 各タスクに解放されるカウント数を設定
   const imageFiles = [
-    { name: '1.jpg', label: '部室に1人来る', unlockCount: 1 }, // count=1で解放
-    { name: '2.jpg', label: '部室に3人来る', unlockCount: 3 }, // count=3で解放
-    { name: '3.jpg', label: '部室に4人来る', unlockCount: 4 }, // count=4で解放
-    { name: '4.jpg', label: '部室に6人来る', unlockCount: 6 }, // count=6で解放
-    { name: '5.jpg', label: '部室に9人来る', unlockCount: 9 }, // count=9で解放
-    { name: '6.jpg', label: '部室に12人来る', unlockCount: 12 }, // count=12で解放
+    { name: '1.png', label: '部室に1人来る', unlockCount: 1 },
+    { name: '2.png', label: '部室に2人来る', unlockCount: 2 },
+    { name: '3.png', label: '部室に3人来る', unlockCount: 3 },
+    { name: '4.png', label: '部室に4人来る', unlockCount: 4 },
+    { name: '5.png', label: '部室に5人来る', unlockCount: 5 },
+    { name: '6.png', label: '部室に6人来る', unlockCount: 6 },
+    { name: '7.png', label: '部室に7人来る', unlockCount: 7 },
+    { name: '8.png', label: '部室に8人来る', unlockCount: 8 },
+    { name: '9.png', label: '部室に9人来る', unlockCount: 9 },
   ]
 
   // タスクの初期化

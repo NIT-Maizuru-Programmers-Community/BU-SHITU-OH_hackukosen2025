@@ -15,10 +15,10 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 const taskStore = useTaskStore()
 const { tasks, completedCount, progressPercentage, currentCount } = storeToRefs(taskStore)
 
-// 6つの画像を格納
+// 9つの画像を格納
 const images = ref<Map<string, HTMLImageElement>>(new Map())
 let imagesLoaded = 0
-const GRID_COLS = 2 // 横2列
+const GRID_COLS = 3 // 横3列
 const GRID_ROWS = 3 // 縦3行
 let intervalId: number | null = null
 
@@ -176,19 +176,19 @@ const resetTasks = () => {
 }
 
 .canvas-wrapper {
-  width: auto;
-  max-width: 450px;
+  width: 100%;
+  max-width: 580px;
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 4px solid #00cc66;
+  border: 3px solid #00cc66;
   overflow: hidden;
   background: #000;
 }
 
 .grid-canvas {
   width: 100%;
-  height: 100%;
+  height: auto;
   max-width: 100%;
   object-fit: contain;
   cursor: default;
