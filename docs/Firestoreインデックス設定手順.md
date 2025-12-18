@@ -184,3 +184,4 @@ Firebase Console で確認すると、インデックスが作成中になって
 
 - [Firestore インデックスの概要](https://firebase.google.com/docs/firestore/query-data/indexing)
 - [Firebase CLI リファレンス](https://firebase.google.com/docs/cli)
+

@@ -9,11 +9,17 @@ import { RankBadge } from "@/components/ui/rank-badge";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { LoadingScreen } from "@/components/ui/loading-spinner";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { useRanking } from "@/hooks/useRanking";
-import { Crown, Trophy } from "lucide-react";
+import { useRanking, RankingUser } from "@/hooks/useRanking";
+import { Crown, Trophy, Gift } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { TransferModal } from "@/components/transfer/transfer-modal";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function RankingPage() {
 	const { ranking, loading } = useRanking();
+	const { user: currentUser } = useAuth();
+	const [selectedUser, setSelectedUser] = useState<RankingUser | null>(null);
 
 	if (loading) {
 		return (
@@ -91,7 +97,19 @@ export default function RankingPage() {
 															</p>
 														</div>
 													</div>
-													<PointBadge points={user.points} />
+													<div className="flex items-center gap-2">
+														<PointBadge points={user.points} />
+														{currentUser?.id !== user.uid && (
+															<Button
+																size="icon"
+																variant="ghost"
+																className="rounded-full hover:bg-primary/10 hover:text-primary h-8 w-8"
+																onClick={() => setSelectedUser(user)}
+															>
+																<Gift className="w-4 h-4" />
+															</Button>
+														)}
+													</div>
 												</div>
 											))}
 										</div>
@@ -119,6 +137,12 @@ export default function RankingPage() {
 						</TabsContent>
 					</Tabs>
 				</Section>
+
+				<TransferModal
+					isOpen={!!selectedUser}
+					onClose={() => setSelectedUser(null)}
+					recipient={selectedUser}
+				/>
 			</PageContainer>
 		</ProtectedRoute>
 	);

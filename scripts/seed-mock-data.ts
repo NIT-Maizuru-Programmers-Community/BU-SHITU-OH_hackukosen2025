@@ -182,7 +182,7 @@ async function seedBets() {
 
 	// まず、レースを取得
 	const racesSnapshot = await db.collection("races").get();
-	const races = racesSnapshot.docs.map((doc) => ({
+	const races: { id: string; participants?: any[]; status?: string; date?: string }[] = racesSnapshot.docs.map((doc) => ({
 		id: doc.id,
 		...doc.data(),
 	}));
@@ -220,7 +220,7 @@ async function seedBets() {
 					createdAt:
 						race.status === "finished"
 							? getTimestamp(
-									parseInt(race.date.split("-")[2]) -
+									parseInt((race.date || getDateString(0)).split("-")[2]) -
 										parseInt(getDateString(0).split("-")[2]),
 									-10
 							  )

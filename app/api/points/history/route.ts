@@ -54,12 +54,14 @@ export async function GET(req: NextRequest) {
 
 		const history = snapshot.docs.map((doc) => {
 			const data = doc.data();
+
 			return {
 				id: doc.id,
 				amount: data.amount,
 				type: data.type as PointTransactionType,
 				description: data.description || "",
 				referenceId: data.referenceId || null,
+				message: data.message || undefined,
 				createdAt: data.createdAt?.toDate().toISOString() || null,
 			};
 		});
@@ -74,4 +76,5 @@ export async function GET(req: NextRequest) {
 		return serverError();
 	}
 }
+
 

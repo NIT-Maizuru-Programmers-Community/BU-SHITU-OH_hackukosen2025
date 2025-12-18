@@ -34,7 +34,8 @@ export async function awardPoints(
 	amount: number,
 	type: PointTransactionType,
 	description: string,
-	relatedId?: string
+	relatedId?: string,
+	message?: string
 ): Promise<AwardPointsResult> {
 	const userRef = adminDb.collection("users").doc(userId);
 	const transactionRef = adminDb.collection("pointTransactions").doc();
@@ -66,6 +67,7 @@ export async function awardPoints(
 			balanceAfter: newBalance,
 			description,
 			referenceId: relatedId || null,
+			message: message || null,
 			createdAt: FieldValue.serverTimestamp(),
 		});
 	});
@@ -88,7 +90,8 @@ export async function deductPoints(
 	amount: number,
 	type: PointTransactionType,
 	description: string,
-	relatedId?: string
+	relatedId?: string,
+	message?: string
 ): Promise<DeductPointsResult> {
 	const userRef = adminDb.collection("users").doc(userId);
 	const transactionRef = adminDb.collection("pointTransactions").doc();
@@ -126,6 +129,7 @@ export async function deductPoints(
 			balanceAfter: newBalance,
 			description,
 			referenceId: relatedId || null,
+			message: message || null,
 			createdAt: FieldValue.serverTimestamp(),
 		});
 	});
@@ -164,4 +168,5 @@ export async function getUserBalance(userId: string): Promise<{
 		updatedAt: userData?.updatedAt?.toDate() || null,
 	};
 }
+
 

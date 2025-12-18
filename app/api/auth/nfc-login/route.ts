@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 		// NFCカードIDからユーザーを検索
 		const userQuery = await adminDb
 			.collection("users")
-			.where("nfcId", "==", nfcCardId)
+			.where("nfcCardId", "==", nfcCardId)
 			.limit(1)
 			.get();
 
@@ -82,8 +82,8 @@ export async function POST(req: NextRequest) {
 		let bonusResult = null;
 
 		if (canReceiveBonus) {
-			// ログインボーナス付与（10pt）
-			const bonusPoints = 10;
+			// ログインボーナス付与（100pt）
+			const bonusPoints = 100;
 			bonusResult = await awardPoints(
 				userId,
 				bonusPoints,
@@ -124,8 +124,8 @@ export async function POST(req: NextRequest) {
 			bonus: canReceiveBonus
 				? {
 						awarded: true,
-						points: 10,
-						message: "ログインボーナス +10pt",
+						points: 100,
+						message: "ログインボーナス +100pt",
 				  }
 				: {
 						awarded: false,

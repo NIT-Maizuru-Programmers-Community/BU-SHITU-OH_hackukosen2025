@@ -42,3 +42,4 @@ export function useUserPoints(userId: string | undefined) {
 
 	return { points, loading, error };
 }
+

@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 			});
 		}
 
-		const { userId, raceId, predictedUserId } = validationResult.data;
+		const { userId, raceId, predictedCharacterId } = validationResult.data;
 
 		// 権限チェック（ユーザー認証の場合、自分の予想のみ記録可能）
 		if (auth.type === "user" && auth.uid !== userId) {
@@ -49,14 +49,14 @@ export async function POST(req: NextRequest) {
 
 		const raceData = raceDoc.data();
 
-		// 対象ユーザーが参加者に含まれているかチェック
-		const participants = raceData?.participants || [];
-		const targetParticipant = participants.find(
-			(p: any) => p.userId === predictedUserId
+		// 対象キャラクターが参加者に含まれているかチェック
+		const characters = raceData?.characters || [];
+		const targetCharacter = characters.find(
+			(c: any) => c.characterId === predictedCharacterId
 		);
 
-		if (!targetParticipant) {
-			return badRequest("指定されたユーザーはレースに参加していません");
+		if (!targetCharacter) {
+			return badRequest("指定されたキャラクターはレースに参加していません");
 		}
 
 		// 既存の予想を確認
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 			const existingDoc = existingPredictionQuery.docs[0];
 			predictionId = existingDoc.id;
 			await adminDb.collection("predictions").doc(predictionId).update({
-				predictedUserId,
+				predictedCharacterId,
 				updatedAt: FieldValue.serverTimestamp(),
 			});
 		} else {
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 			const predictionRef = await adminDb.collection("predictions").add({
 				userId,
 				raceId,
-				predictedUserId,
+				predictedCharacterId,
 				createdAt: FieldValue.serverTimestamp(),
 			});
 			predictionId = predictionRef.id;
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
 				id: predictionId,
 				userId,
 				raceId,
-				predictedUserId,
+				predictedCharacterId,
 				createdAt: new Date().toISOString(),
 			},
 		});

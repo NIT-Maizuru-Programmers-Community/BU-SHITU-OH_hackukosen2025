@@ -10,26 +10,29 @@ export type RaceStatus =
 	| "cancelled"; // キャンセル
 
 /**
- * レース参加者（部員）
+ * レース参加キャラクター
  */
-export interface RaceParticipant {
-	/** ユーザー ID */
-	userId: string;
+export interface RaceCharacter {
+	/** キャラクター ID */
+	characterId: string;
 
 	/** 表示名 */
-	displayName: string;
+	name: string;
 
-	/** プロフィール画像 URL */
-	photoURL?: string;
+	/** 絵文字 */
+	emoji?: string;
 
 	/** オッズ（倍率） */
 	odds: number;
 
-	/** このユーザーへの総ベット数 */
+	/** このキャラクターへの総ベット数 */
 	totalBets: number;
 
-	/** このユーザーへの総ベットポイント */
+	/** このキャラクターへの総ベットポイント */
 	totalBetPoints: number;
+
+	/** 順位（完了後） */
+	rank?: number;
 }
 
 /**
@@ -54,17 +57,17 @@ export interface Race {
 	/** レース終了時刻 */
 	endTime?: Timestamp;
 
-	/** 参加者リスト */
-	participants: RaceParticipant[];
+	/** 参加キャラクターリスト */
+	characters: RaceCharacter[];
 
-	/** 優勝者ユーザー ID */
-	winnerId?: string;
+	/** 優勝キャラクター ID */
+	winnerCharacterId?: string;
 
-	/** 2位のユーザー ID */
-	secondPlaceId?: string;
+	/** 2位のキャラクター ID */
+	secondPlaceCharacterId?: string;
 
-	/** 3位のユーザー ID */
-	thirdPlaceId?: string;
+	/** 3位のキャラクター ID */
+	thirdPlaceCharacterId?: string;
 
 	/** 総ベット数 */
 	totalBets: number;
@@ -92,8 +95,8 @@ export interface Bet {
 	/** ベットしたユーザー ID */
 	userId: string;
 
-	/** ベット対象の参加者ユーザー ID */
-	targetUserId: string;
+	/** ベット対象のキャラクター ID */
+	targetCharacterId: string;
 
 	/** ベットポイント数 */
 	points: number;
@@ -117,7 +120,7 @@ export interface Bet {
 export interface CreateRaceInput {
 	date: string;
 	scheduledStartTime: Timestamp;
-	participantUserIds: string[];
+	characterIds: string[]; // レースに参加させるキャラクターID
 }
 
 /**
@@ -125,7 +128,7 @@ export interface CreateRaceInput {
  */
 export interface CreateBetInput {
 	raceId: string;
-	targetUserId: string;
+	targetCharacterId: string;
 	points: number;
 }
 
@@ -133,14 +136,14 @@ export interface CreateBetInput {
  * レース結果
  */
 export interface RaceResult {
-	/** 優勝者 */
-	winner: RaceParticipant;
+	/** 優勝キャラクター */
+	winner: RaceCharacter;
 
 	/** 2位 */
-	secondPlace?: RaceParticipant;
+	secondPlace?: RaceCharacter;
 
 	/** 3位 */
-	thirdPlace?: RaceParticipant;
+	thirdPlace?: RaceCharacter;
 
 	/** 払い戻し総額 */
 	totalPayout: number;
@@ -148,6 +151,3 @@ export interface RaceResult {
 	/** 的中数 */
 	winningBetsCount: number;
 }
-
-
-
