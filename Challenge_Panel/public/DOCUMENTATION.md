@@ -123,13 +123,6 @@ Challenge_Panel/
 ```
 GET /api/attendance/today-count
 ```
-
-### リクエストヘッダー
-
-```
-HARDWARE_API_KEY: Procon2025
-```
-
 ### レスポンス
 
 ```json
