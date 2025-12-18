@@ -56,8 +56,8 @@ def realize(a, b, c, mtr_min, mtr_max):
 def match(debugmode = False):
     #パラメータ
     length = 100  #試合情報の長さ
-    distance = 10  #試合情報のゴールした際の1位とその他の差
-    points = 5  #試合情報の途中経過地点生成数
+    distance = 20  #試合情報のゴールした際の1位とその他の差
+    points = 10  #試合情報の途中経過地点生成数
     radius = 32.5  #現実の回る部分の半径
     goal = 508  #現実のスタートからゴールまでの距離
     mtr_min = 10  #モータの最低速度
@@ -128,6 +128,7 @@ def match(debugmode = False):
 
     time.sleep(10)
     mySerial.write("R;".encode())
+    time.sleep(1)
     mySerial.write("A0;".encode())
 
     #シリアル通信を終了
