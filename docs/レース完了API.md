@@ -26,23 +26,20 @@ Content-Type: application/json
 X-API-Key: your-hardware-api-key
 
 {
-  "raceId": "race_12345",           // レースID（必須）
-  "winnerId": "user_abc123",        // 勝者のユーザーID（必須）
-  "results": [                      // 全参加者の順位（オプション）
+  "raceId": "race_12345",              // レースID（必須）
+  "winnerCharacterId": "cheetah",      // 勝者のキャラクターID（必須）
+  "results": [                         // 全キャラクターの順位（オプション）
     {
-      "userId": "user_abc123",
-      "rank": 1,
-      "stayDuration": 14400         // 在室時間（秒）
+      "characterId": "cheetah",
+      "rank": 1
     },
     {
-      "userId": "user_def456",
-      "rank": 2,
-      "stayDuration": 12000
+      "characterId": "rabbit",
+      "rank": 2
     },
     {
-      "userId": "user_ghi789",
-      "rank": 3,
-      "stayDuration": 9600
+      "characterId": "lion",
+      "rank": 3
     }
   ]
 }
@@ -57,8 +54,9 @@ X-API-Key: your-hardware-api-key
 	"data": {
 		"race": {
 			"id": "race_12345",
-			"winnerId": "user_abc123",
-			"winnerDisplayName": "山田太郎",
+			"winnerCharacterId": "cheetah",
+			"winnerName": "チーター",
+			"winnerEmoji": "🐆",
 			"odds": 2.5,
 			"totalBets": 5,
 			"totalPayouts": 1250
@@ -105,12 +103,12 @@ X-API-Key: your-hardware-api-key
 }
 ```
 
-**勝者が参加者に含まれていない**
+**勝者キャラクターが参加していない**
 
 ```json
 {
 	"success": false,
-	"error": "指定された勝者はレースに参加していません",
+	"error": "指定されたキャラクターはレースに参加していません",
 	"code": "BAD_REQUEST"
 }
 ```
@@ -123,7 +121,7 @@ X-API-Key: your-hardware-api-key
 
    - レースが存在するか確認
    - レースがまだ完了していないか確認
-   - 勝者が参加者に含まれているか確認
+   - 勝者キャラクターがレースに参加しているか確認
 
 2. **オッズの計算**
 
@@ -135,7 +133,7 @@ X-API-Key: your-hardware-api-key
 
 3. **配当の計算と付与**
 
-   - 勝者にベットした全ユーザーを取得
+   - 勝者キャラクターにベットした全ユーザーを取得
    - 各ユーザーに配当を付与:
      ```
      配当 = ベット額 × オッズ
@@ -143,7 +141,7 @@ X-API-Key: your-hardware-api-key
    - ポイント履歴に記録
 
 4. **レースの完了**
-   - 勝者情報を記録
+   - 勝者キャラクター情報を記録
    - ステータスを `completed` に更新
    - 最終オッズと総配当額を記録
 
@@ -154,23 +152,25 @@ X-API-Key: your-hardware-api-key
 ### curl でのテスト
 
 ```bash
-# レースを完了して勝者を決定
+# レースを完了して勝者キャラクターを決定
 curl -X POST https://your-app.vercel.app/api/race/complete \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-hardware-api-key" \
   -d '{
     "raceId": "race_2025-12-14",
-    "winnerId": "user_abc123",
+    "winnerCharacterId": "cheetah",
     "results": [
       {
-        "userId": "user_abc123",
-        "rank": 1,
-        "stayDuration": 14400
+        "characterId": "cheetah",
+        "rank": 1
       },
       {
-        "userId": "user_def456",
-        "rank": 2,
-        "stayDuration": 12000
+        "characterId": "rabbit",
+        "rank": 2
+      },
+      {
+        "characterId": "lion",
+        "rank": 3
       }
     ]
   }'
@@ -182,7 +182,7 @@ curl -X POST https://your-app.vercel.app/api/race/complete \
 import requests
 import os
 
-def complete_race(race_id: str, winner_id: str, results: list = None):
+def complete_race(race_id: str, winner_character_id: str, results: list = None):
     """
     レースを完了して結果を保存
     """
@@ -191,7 +191,7 @@ def complete_race(race_id: str, winner_id: str, results: list = None):
 
     payload = {
         'raceId': race_id,
-        'winnerId': winner_id
+        'winnerCharacterId': winner_character_id
     }
 
     if results:
@@ -210,7 +210,7 @@ def complete_race(race_id: str, winner_id: str, results: list = None):
     if response.status_code == 200:
         data = response.json()
         print(f"✓ レース完了")
-        print(f"  勝者: {data['data']['race']['winnerDisplayName']}")
+        print(f"  勝者: {data['data']['race']['winnerName']} {data['data']['race']['winnerEmoji']}")
         print(f"  オッズ: {data['data']['race']['odds']}倍")
         print(f"  総配当: {data['data']['race']['totalPayouts']}pt")
         return data
@@ -221,23 +221,23 @@ def complete_race(race_id: str, winner_id: str, results: list = None):
 
 # 使用例
 if __name__ == '__main__':
-    # 在室時間レースの結果
+    # ランダム抽選の結果
     results = [
-        {'userId': 'user_abc123', 'rank': 1, 'stayDuration': 14400},
-        {'userId': 'user_def456', 'rank': 2, 'stayDuration': 12000},
-        {'userId': 'user_ghi789', 'rank': 3, 'stayDuration': 9600},
+        {'characterId': 'cheetah', 'rank': 1},
+        {'characterId': 'rabbit', 'rank': 2},
+        {'characterId': 'lion', 'rank': 3},
     ]
 
     complete_race(
         race_id='race_2025-12-14',
-        winner_id='user_abc123',
+        winner_character_id='cheetah',
         results=results
     )
 ```
 
 ### Raspberry Pi での自動実行例
 
-毎日 18:00 にレースを締め切り、在室時間から勝者を決定する例:
+毎日 18:00 にレースを締め切り、ランダムで勝者を決定する例:
 
 ```python
 #!/usr/bin/env python3
@@ -248,6 +248,7 @@ if __name__ == '__main__':
 
 import requests
 import os
+import random
 from datetime import datetime, date
 from dotenv import load_dotenv
 
@@ -267,34 +268,27 @@ def get_today_race():
         return data.get('data', {}).get('race')
     return None
 
-def calculate_winner_from_attendance(race_id):
-    """在室時間から勝者を決定"""
-    # attendance データから在室時間を計算
-    # (実際の実装では Firestore から取得)
+def select_winner_randomly(characters):
+    """ランダムに勝者キャラクターを決定"""
+    if not characters:
+        return None, []
 
-    # 仮のデータ
-    attendance_data = [
-        {'userId': 'user_abc123', 'displayName': '山田太郎', 'duration': 14400},
-        {'userId': 'user_def456', 'displayName': '佐藤花子', 'duration': 12000},
-        {'userId': 'user_ghi789', 'displayName': '鈴木次郎', 'duration': 9600},
-    ]
-
-    # 在室時間でソート
-    sorted_data = sorted(attendance_data, key=lambda x: x['duration'], reverse=True)
+    # キャラクターをシャッフルしてランダムに順位付け
+    shuffled = characters.copy()
+    random.shuffle(shuffled)
 
     # 結果データを構築
     results = [
         {
-            'userId': user['userId'],
-            'rank': idx + 1,
-            'stayDuration': user['duration']
+            'characterId': char['characterId'],
+            'rank': idx + 1
         }
-        for idx, user in enumerate(sorted_data)
+        for idx, char in enumerate(shuffled)
     ]
 
-    winner_id = sorted_data[0]['userId']
+    winner_character_id = shuffled[0]['characterId']
 
-    return winner_id, results
+    return winner_character_id, results
 
 def main():
     print(f"[{datetime.now()}] レース締切処理を開始")
@@ -307,17 +301,24 @@ def main():
         return
 
     race_id = race['id']
-    print(f"レースID: {race_id}")
+    characters = race.get('characters', [])
 
-    # 勝者を計算
-    winner_id, results = calculate_winner_from_attendance(race_id)
+    print(f"レースID: {race_id}")
+    print(f"参加キャラクター数: {len(characters)}体")
+
+    # ランダムに勝者キャラクターを選択
+    winner_character_id, results = select_winner_randomly(characters)
+
+    if not winner_character_id:
+        print("参加キャラクターがいないため、レースを完了できません")
+        return
 
     # レースを完了
     response = requests.post(
         f"{API_ENDPOINT}/api/race/complete",
         json={
             'raceId': race_id,
-            'winnerId': winner_id,
+            'winnerCharacterId': winner_character_id,
             'results': results
         },
         headers={
@@ -329,7 +330,7 @@ def main():
     if response.status_code == 200:
         data = response.json()
         print(f"✓ レース完了!")
-        print(f"  勝者: {data['data']['race']['winnerDisplayName']}")
+        print(f"  勝者: {data['data']['race']['winnerName']} {data['data']['race']['winnerEmoji']}")
         print(f"  オッズ: {data['data']['race']['odds']}倍")
         print(f"  総配当: {data['data']['race']['totalPayouts']}pt")
     else:
@@ -360,11 +361,11 @@ if __name__ == '__main__':
 **例:**
 
 - 総ベット額: 1000 pt
-- ユーザー A へのベット: 200 pt
-- ユーザー B へのベット: 300 pt
-- ユーザー C へのベット: 500 pt
+- チーター へのベット: 200 pt
+- ウサギ へのベット: 300 pt
+- ライオン へのベット: 500 pt
 
-ユーザー A が勝った場合:
+チーター が勝った場合:
 
 ```
 オッズ = 1000 ÷ 200 = 5.0 倍
@@ -380,8 +381,8 @@ if __name__ == '__main__':
 
 **例:**
 
-- 田中さんがユーザー A に 100pt ベット → 配当 = 100 × 5.0 = 500pt
-- 佐藤さんがユーザー A に 50pt ベット → 配当 = 50 × 5.0 = 250pt
+- 田中さんがチーターに 100pt ベット → 配当 = 100 × 5.0 = 500pt
+- 佐藤さんがチーターに 50pt ベット → 配当 = 50 × 5.0 = 250pt
 
 ---
 
@@ -414,10 +415,10 @@ if __name__ == '__main__':
 
 レースは一度しか完了できません。`GET /api/race/result?raceId=xxx` で結果を確認してください。
 
-### エラー: "指定された勝者はレースに参加していません"
+### エラー: "指定されたキャラクターはレースに参加していません"
 
-`winnerId` がレースの参加者に含まれているか確認してください。
-`GET /api/race/today` で参加者一覧を取得できます。
+`winnerCharacterId` がレースの参加キャラクターに含まれているか確認してください。
+`GET /api/race/today` で参加キャラクター一覧を取得できます。
 
 ### 配当が付与されない
 
@@ -437,4 +438,4 @@ if __name__ == '__main__':
 
 が可能になります。
 
-在室時間レースの場合は、毎日自動で実行するスクリプトを作成することを推奨します。
+ランダム抽選レースは、毎日自動で実行するスクリプトを作成することを推奨します。

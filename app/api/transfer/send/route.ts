@@ -67,7 +67,8 @@ export async function POST(req: NextRequest) {
 				amount,
 				"transfer_sent",
 				`${receiverData?.displayName || "不明なユーザー"}への送金`,
-				receiverId
+				receiverId,
+				message
 			);
 
 			// 受信者にポイント付与
@@ -76,7 +77,8 @@ export async function POST(req: NextRequest) {
 				amount,
 				"transfer_received",
 				`${senderData?.displayName || "不明なユーザー"}からの送金`,
-				senderId
+				senderId,
+				message
 			);
 
 			// 送金記録を作成

@@ -122,3 +122,4 @@ export function serverError(message: string = "サーバーエラーが発生し
 	return createErrorResponse(message, ApiErrorCode.SERVER_ERROR, 500);
 }
 
+

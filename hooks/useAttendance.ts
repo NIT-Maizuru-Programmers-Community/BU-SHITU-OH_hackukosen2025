@@ -71,3 +71,4 @@ export function formatDuration(minutes: number): string {
 	const mins = minutes % 60;
 	return hours > 0 ? `${hours}時間${mins}分` : `${mins}分`;
 }
+

@@ -42,8 +42,8 @@ export default function HistoryPage() {
 				return TrendingUp;
 			case "race_win":
 				return Trophy;
-			case "transfer_receive":
-			case "transfer_send":
+			case "transfer_received":
+			case "transfer_sent":
 				return ArrowRightLeft;
 			case "race_bet":
 			case "deduct":
@@ -122,6 +122,11 @@ export default function HistoryPage() {
 																<p className='font-medium truncate'>
 																	{transaction.description}
 																</p>
+																{transaction.message && (
+																	<p className='text-xs text-muted-foreground italic mt-0.5'>
+																		「{transaction.message}」
+																	</p>
+																)}
 																<p className='text-xs text-muted-foreground'>
 																	{formatDate(transaction.createdAt)}
 																</p>
@@ -169,6 +174,11 @@ export default function HistoryPage() {
 																<p className='font-medium truncate'>
 																	{transaction.description}
 																</p>
+																{transaction.message && (
+																	<p className='text-xs text-muted-foreground italic mt-0.5'>
+																		「{transaction.message}」
+																	</p>
+																)}
 																<p className='text-xs text-muted-foreground'>
 																	{formatDate(transaction.createdAt)}
 																</p>
@@ -211,6 +221,11 @@ export default function HistoryPage() {
 																<p className='font-medium truncate'>
 																	{transaction.description}
 																</p>
+																{transaction.message && (
+																	<p className='text-xs text-muted-foreground italic mt-0.5'>
+																		「{transaction.message}」
+																	</p>
+																)}
 																<p className='text-xs text-muted-foreground'>
 																	{formatDate(transaction.createdAt)}
 																</p>

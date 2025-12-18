@@ -1,7 +1,7 @@
 {
 	"indexes": [
 		{
-			"collectionGroup": "points",
+			"collectionGroup": "pointTransactions",
 			"queryScope": "COLLECTION",
 			"fields": [
 				{
@@ -45,3 +45,4 @@
 	],
 	"fieldOverrides": []
 }
+

@@ -15,8 +15,8 @@ export type PointHistoryType =
 	| "attendance"
 	| "race_win"
 	| "race_bet"
-	| "transfer_send"
-	| "transfer_receive"
+	| "transfer_sent"
+	| "transfer_received"
 	| "award"
 	| "deduct"
 	| "reset";
@@ -28,6 +28,7 @@ export interface PointHistoryItem {
 	type: PointHistoryType;
 	description: string;
 	relatedId?: string;
+	message?: string; // 送金時のメッセージ
 	createdAt: Date;
 }
 
@@ -49,7 +50,7 @@ export function usePointHistory(
 		setLoading(true);
 
 		const q = query(
-			collection(db, "points"),
+			collection(db, "pointTransactions"),
 			where("userId", "==", userId),
 			orderBy("createdAt", "desc"),
 			limit(limitCount)
@@ -67,6 +68,7 @@ export function usePointHistory(
 						type: data.type || "award",
 						description: data.description || "",
 						relatedId: data.relatedId,
+						message: data.message,
 						createdAt: data.createdAt?.toDate() || new Date(),
 					};
 				});

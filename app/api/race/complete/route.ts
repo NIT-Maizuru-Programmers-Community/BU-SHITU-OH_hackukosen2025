@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 			});
 		}
 
-		const { raceId, winnerId, results } = validationResult.data;
+		const { raceId, winnerCharacterId, results } = validationResult.data;
 
 		// レースの存在確認
 		const raceRef = adminDb.collection("races").doc(raceId);
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 		const raceData = raceDoc.data();
 
 		// レースの状態チェック
-		if (raceData?.status === "completed" || raceData?.winnerId) {
+		if (raceData?.status === "completed" || raceData?.winnerCharacterId) {
 			return createErrorResponse(
 				"レースは既に完了しています",
 				ApiErrorCode.RACE_CLOSED,
@@ -57,27 +57,29 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
-		// 勝者が参加者に含まれているかチェック
-		const participants = raceData?.participants || [];
-		const winner = participants.find((p: any) => p.userId === winnerId);
+		// 勝者キャラクターが参加しているかチェック
+		const characters = raceData?.characters || [];
+		const winnerCharacter = characters.find(
+			(c: any) => c.characterId === winnerCharacterId
+		);
 
-		if (!winner) {
-			return badRequest("指定された勝者はレースに参加していません");
+		if (!winnerCharacter) {
+			return badRequest("指定されたキャラクターはレースに参加していません");
 		}
 
 		// 当選ベットの取得
 		const betsSnapshot = await adminDb
 			.collection("bets")
 			.where("raceId", "==", raceId)
-			.where("targetUserId", "==", winnerId)
+			.where("targetCharacterId", "==", winnerCharacterId)
 			.get();
 
 		// 配当の計算と実行
 		const payoutResults = [];
 		const totalBetPoints = raceData?.totalBetPoints || 0;
-		const winnerTotalBets = winner.totalBetPoints || 1; // 0除算防止
+		const winnerTotalBets = winnerCharacter.totalBetPoints || 1; // 0除算防止
 
-		// オッズの計算 (総ベット額 / 勝者へのベット額)
+		// オッズの計算 (総ベット額 / 勝者キャラクターへのベット額)
 		const odds = Math.max(1.0, totalBetPoints / winnerTotalBets);
 
 		for (const betDoc of betsSnapshot.docs) {
@@ -92,7 +94,9 @@ export async function POST(req: NextRequest) {
 					betData.userId,
 					payout,
 					"race_win",
-					`レース配当: ${winner.displayName}に的中 (${odds.toFixed(2)}倍)`,
+					`レース配当: ${winnerCharacter.emoji || ""} ${
+						winnerCharacter.name
+					}に的中 (${odds.toFixed(2)}倍)`,
 					raceId
 				);
 
@@ -118,8 +122,9 @@ export async function POST(req: NextRequest) {
 
 		// レースドキュメントを更新
 		const updateData: any = {
-			winnerId,
-			winnerDisplayName: winner.displayName,
+			winnerCharacterId,
+			winnerName: winnerCharacter.name,
+			winnerEmoji: winnerCharacter.emoji || "",
 			status: "completed",
 			finalOdds: odds,
 			totalPayouts: payoutResults.reduce((sum, p) => sum + p.payout, 0),
@@ -130,16 +135,15 @@ export async function POST(req: NextRequest) {
 		// 結果データがあれば追加
 		if (results && results.length > 0) {
 			updateData.results = results;
-			// 参加者の在室時間を更新
-			updateData.participants = participants.map((p: any) => {
-				const result = results.find((r) => r.userId === p.userId);
+			// キャラクターの順位を更新
+			updateData.characters = characters.map((c: any) => {
+				const result = results.find((r) => r.characterId === c.characterId);
 				return result
 					? {
-							...p,
+							...c,
 							rank: result.rank,
-							stayDuration: result.stayDuration || p.stayDuration || 0,
 					  }
-					: p;
+					: c;
 			});
 		}
 
@@ -149,8 +153,9 @@ export async function POST(req: NextRequest) {
 			message: "レースが完了しました",
 			race: {
 				id: raceId,
-				winnerId,
-				winnerDisplayName: winner.displayName,
+				winnerCharacterId,
+				winnerName: winnerCharacter.name,
+				winnerEmoji: winnerCharacter.emoji || "",
 				odds: parseFloat(odds.toFixed(2)),
 				totalBets: betsSnapshot.size,
 				totalPayouts: payoutResults.reduce((sum, p) => sum + p.payout, 0),

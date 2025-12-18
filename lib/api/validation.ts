@@ -58,7 +58,7 @@ export const deductPointsSchema = z.object({
 export const raceBetSchema = z.object({
 	userId: z.string().min(1, "ユーザーIDは必須です"),
 	raceId: z.string().min(1, "レースIDは必須です"),
-	targetUserId: z.string().min(1, "対象ユーザーIDは必須です"),
+	targetCharacterId: z.string().min(1, "対象キャラクターIDは必須です"),
 	amount: z
 		.number()
 		.int()
@@ -72,7 +72,7 @@ export const raceBetSchema = z.object({
 export const racePredictSchema = z.object({
 	userId: z.string().min(1, "ユーザーIDは必須です"),
 	raceId: z.string().min(1, "レースIDは必須です"),
-	predictedUserId: z.string().min(1, "予想ユーザーIDは必須です"),
+	predictedCharacterId: z.string().min(1, "予想キャラクターIDは必須です"),
 });
 
 /**
@@ -110,13 +110,12 @@ export const checkOutSchema = z.object({
  */
 export const raceCompleteSchema = z.object({
 	raceId: z.string().min(1, "レースIDは必須です"),
-	winnerId: z.string().min(1, "勝者IDは必須です"),
+	winnerCharacterId: z.string().min(1, "勝者キャラクターIDは必須です"),
 	results: z
 		.array(
 			z.object({
-				userId: z.string(),
+				characterId: z.string(),
 				rank: z.number().int().positive(),
-				stayDuration: z.number().int().nonnegative().optional(),
 			})
 		)
 		.optional(),

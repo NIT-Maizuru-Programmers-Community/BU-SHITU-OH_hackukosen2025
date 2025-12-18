@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 			});
 		}
 
-		const { userId, raceId, targetUserId, amount } = validationResult.data;
+		const { userId, raceId, targetCharacterId, amount } = validationResult.data;
 
 		// レースの存在確認
 		const raceRef = adminDb.collection("races").doc(raceId);
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 		const raceData = raceDoc.data();
 
 		// レースの状態チェック
-		if (raceData?.status === "completed" || raceData?.winnerId) {
+		if (raceData?.status === "completed" || raceData?.winnerCharacterId) {
 			return createErrorResponse(
 				"レースは既に締め切られています",
 				ApiErrorCode.RACE_CLOSED,
@@ -57,14 +57,14 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
-		// 対象ユーザーが参加者に含まれているかチェック
-		const participants = raceData?.participants || [];
-		const targetParticipant = participants.find(
-			(p: any) => p.userId === targetUserId
+		// 対象キャラクターが参加者に含まれているかチェック
+		const characters = raceData?.characters || [];
+		const targetCharacter = characters.find(
+			(c: any) => c.characterId === targetCharacterId
 		);
 
-		if (!targetParticipant) {
-			return badRequest("指定されたユーザーはレースに参加していません");
+		if (!targetCharacter) {
+			return badRequest("指定されたキャラクターはレースに参加していません");
 		}
 
 		// ポイント減算処理
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
 				userId,
 				amount,
 				"race_bet",
-				`レースベット: ${targetParticipant.displayName}に${amount}pt`,
+				`レースベット: ${targetCharacter.name}に${amount}pt`,
 				raceId
 			);
 
@@ -81,9 +81,9 @@ export async function POST(req: NextRequest) {
 			const betRef = await adminDb.collection("bets").add({
 				raceId,
 				userId,
-				targetUserId,
+				targetCharacterId,
 				points: amount,
-				oddsAtBet: targetParticipant.odds || 1.0,
+				oddsAtBet: targetCharacter.odds || 1.0,
 				createdAt: FieldValue.serverTimestamp(),
 			});
 
@@ -91,14 +91,14 @@ export async function POST(req: NextRequest) {
 			await raceRef.update({
 				totalBets: FieldValue.increment(1),
 				totalBetPoints: FieldValue.increment(amount),
-				participants: participants.map((p: any) =>
-					p.userId === targetUserId
+				characters: characters.map((c: any) =>
+					c.characterId === targetCharacterId
 						? {
-								...p,
-								totalBets: (p.totalBets || 0) + 1,
-								totalBetPoints: (p.totalBetPoints || 0) + amount,
+								...c,
+								totalBets: (c.totalBets || 0) + 1,
+								totalBetPoints: (c.totalBetPoints || 0) + amount,
 						  }
-						: p
+						: c
 				),
 			});
 
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
 					id: betRef.id,
 					raceId,
 					userId,
-					targetUserId,
+					targetCharacterId,
 					amount,
 					createdAt: new Date().toISOString(),
 				},

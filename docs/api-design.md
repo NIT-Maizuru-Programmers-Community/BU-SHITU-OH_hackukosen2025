@@ -28,20 +28,25 @@ X-API-Key: <api_key>
 
 ### 認証・ユーザー管理
 
-#### 1. NFC カード登録
+#### 1. IC カード登録（ハードウェア用）
 
-ユーザーと NFC カード ID を紐付けます。
+ハードウェアが IC カードを読み取り、QR コード用のトークンを生成します。
 
 ```
-POST /api/auth/register-nfc
+POST /api/auth/register-card
+```
+
+**リクエストヘッダー**
+
+```
+X-API-Key: <api_key>
 ```
 
 **リクエストボディ**
 
 ```json
 {
-	"nfcCardId": "1234567890ABCDEF",
-	"userId": "user_uid_from_firebase"
+	"nfcCardId": "1234567890ABCDEF"
 }
 ```
 
@@ -50,9 +55,64 @@ POST /api/auth/register-nfc
 ```json
 {
 	"success": true,
-	"message": "NFCカードが登録されました",
-	"user": {
-		"uid": "user_uid_from_firebase",
+	"message": "ICカードの登録トークンを生成しました",
+	"data": {
+		"registrationId": "reg_abc123",
+		"linkToken": "a1b2c3d4e5f6...",
+		"linkUrl": "https://app.example.com/auth/link-card?token=a1b2c3d4e5f6...",
+		"nfcCardId": "1234567890ABCDEF",
+		"expiresIn": 1800
+	}
+}
+```
+
+**エラーレスポンス**
+
+```json
+{
+	"error": "このカードは既に登録されています"
+}
+```
+
+**処理内容**
+
+- カードが既に登録されていないかチェック
+- 一時トークン（32 文字）を生成
+- pendingCardRegistrations コレクションに保存（有効期限: 30 分）
+- QR コード用の URL を返す
+
+---
+
+#### 2. IC カード連携（アプリ用）
+
+ユーザーが QR コードをスキャンして、自分のアカウントと IC カードを連携します。
+
+```
+POST /api/auth/link-card
+```
+
+**リクエストヘッダー**
+
+```
+Authorization: Bearer <firebase_id_token>
+```
+
+**リクエストボディ**
+
+```json
+{
+	"linkToken": "a1b2c3d4e5f6..."
+}
+```
+
+**レスポンス**
+
+```json
+{
+	"success": true,
+	"message": "ICカードを連携しました",
+	"data": {
+		"userId": "user_uid",
 		"displayName": "田中太郎",
 		"nfcCardId": "1234567890ABCDEF"
 	}
@@ -63,19 +123,51 @@ POST /api/auth/register-nfc
 
 ```json
 {
-	"success": false,
-	"error": "このカードは既に登録されています"
+	"error": "無効なトークンまたは期限切れです"
+}
+```
+
+**処理内容**
+
+- トークンの有効性を確認
+- ユーザーが既にカードを持っていないかチェック
+- カードが他のユーザーに登録されていないかチェック
+- ユーザーの nfcCardId を更新
+- pendingCardRegistrations を完了状態に更新
+
+---
+
+#### 3. トークン情報取得
+
+連携ページでトークンの有効性を確認するための API。
+
+```
+GET /api/auth/link-card?token=<link_token>
+```
+
+**レスポンス**
+
+```json
+{
+	"success": true,
+	"data": {
+		"nfcCardId": "1234567890ABCDEF",
+		"createdAt": "2025-12-15T10:00:00Z",
+		"expiresAt": "2025-12-15T10:30:00Z"
+	}
 }
 ```
 
 ---
 
-#### 2. NFC ログイン（ハードウェア用）
+#### 4. NFC ログイン（ハードウェア用）
 
-NFC カードをかざしてログインします。ログインボーナスも自動付与されます。
+登録済みの NFC カードをかざしてログインします。ログインボーナスも自動付与されます。
 
 ```
 POST /api/auth/nfc-login
+または
+POST /api/attendance/checkin
 ```
 
 **リクエストボディ**
@@ -129,7 +221,7 @@ POST /api/auth/nfc-login
 
 ---
 
-#### 3. ログインボーナス手動取得
+#### 5. ログインボーナス手動取得
 
 アプリから手動でログインボーナスを取得します。
 
@@ -167,7 +259,7 @@ Authorization: Bearer <firebase_id_token>
 
 ### ポイント管理
 
-#### 4. ポイント付与（ハードウェア用）
+#### 6. ポイント付与（ハードウェア用）
 
 ハードウェアから直接ポイントを付与します。
 
@@ -221,7 +313,7 @@ X-API-Key: <api_key>
 
 ---
 
-#### 5. ポイント減算（ハードウェア用）
+#### 7. ポイント減算（ハードウェア用）
 
 ハードウェアから直接ポイントを減算します（ベット等で使用）。
 
@@ -277,7 +369,7 @@ X-API-Key: <api_key>
 
 ---
 
-#### 6. ポイント残高取得
+#### 8. ポイント残高取得
 
 ユーザーの現在のポイント残高を取得します。
 
@@ -307,7 +399,7 @@ X-API-Key: <api_key>
 
 ---
 
-#### 7. ポイント履歴取得
+#### 9. ポイント履歴取得
 
 ユーザーのポイント履歴を取得します。
 
@@ -358,7 +450,7 @@ Authorization: Bearer <firebase_id_token>
 
 ### レース管理
 
-#### 8. 本日のレース情報取得
+#### 10. 本日のレース情報取得
 
 本日開催されるレースの情報を取得します。
 
@@ -402,7 +494,7 @@ GET /api/race/today
 
 ---
 
-#### 9. レースベット（ハードウェア用）
+#### 11. レースベット（ハードウェア用）
 
 ハードウェアからレースにベットします。
 
@@ -456,7 +548,7 @@ X-API-Key: <api_key>
 
 ---
 
-#### 10. レース結果取得
+#### 12. レース結果取得
 
 レースの結果を取得します。
 
@@ -501,7 +593,7 @@ GET /api/race/result?raceId=race_id
 
 ---
 
-#### 11. レース予想の記録
+#### 13. レース予想の記録
 
 ログイン時にレースの予想を記録します（ログインボーナスに関連）。
 
@@ -543,7 +635,7 @@ POST /api/race/predict
 
 ### スパチャ（送金）管理
 
-#### 12. ポイント送金
+#### 14. ポイント送金
 
 他のユーザーにポイントを送金します。
 
@@ -600,7 +692,7 @@ Authorization: Bearer <firebase_id_token>
 
 ---
 
-#### 13. 送金履歴取得
+#### 15. 送金履歴取得
 
 送金・受信の履歴を取得します。
 
@@ -646,12 +738,14 @@ Authorization: Bearer <firebase_id_token>
 
 ### 在室状況管理
 
-#### 14. チェックイン（入室）
+#### 16. チェックイン（入室）
 
 NFC ログイン時に自動で呼び出されます。手動でも呼び出し可能。
 
 ```
 POST /api/attendance/check-in
+または
+POST /api/attendance/checkin
 ```
 
 **リクエストヘッダー**
@@ -687,12 +781,14 @@ Authorization: Bearer <firebase_id_token>
 
 ---
 
-#### 15. チェックアウト（退室） なしになりました
+#### 17. チェックアウト（退室） なしになりました
 
 NFC リーダーで退室を検知するか、手動で呼び出します。
 
 ```
 POST /api/attendance/check-out
+または
+POST /api/attendance/checkout
 ```
 
 **リクエストヘッダー**
@@ -730,7 +826,7 @@ Authorization: Bearer <firebase_id_token>
 
 ---
 
-#### 16. 在室者一覧取得
+#### 18. 在室者一覧取得
 
 現在部室にいる人の一覧を取得します。
 
@@ -763,7 +859,7 @@ GET /api/attendance/current
 
 ---
 
-#### 17. 出席履歴取得
+#### 19. 出席履歴取得
 
 特定のユーザーの出席履歴を取得します。
 
@@ -811,7 +907,7 @@ Authorization: Bearer <firebase_id_token>
 
 ### ランキング管理
 
-#### 18. ランキング取得
+#### 20. ランキング取得
 
 ポイントランキングを取得します。
 
@@ -1151,4 +1247,3 @@ curl -X POST http://localhost:3000/api/race/bet \
 4. **ドキュメント整備**
    - ハードウェア開発者向けの API 利用ガイド作成
    - エンドポイントごとのサンプルコード提供
-

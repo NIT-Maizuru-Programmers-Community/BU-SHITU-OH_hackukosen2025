@@ -131,3 +131,4 @@ export function useRaceHistory(limitCount: number = 10) {
 
 	return { races, loading, error };
 }
+

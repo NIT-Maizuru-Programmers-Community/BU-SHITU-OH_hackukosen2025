@@ -14,6 +14,7 @@ export interface RankingUser {
 	displayName: string;
 	points: number;
 	rank: number;
+	photoURL?: string;
 }
 
 export function useRanking(limitCount: number = 50) {
@@ -40,6 +41,7 @@ export function useRanking(limitCount: number = 50) {
 						displayName: data.displayName || "名無し",
 						points: data.points || 0,
 						rank: index + 1,
+						photoURL: data.photoURL,
 					};
 				});
 
@@ -69,3 +71,4 @@ export function useMyRank(myUid: string | undefined) {
 	const myRanking = ranking.find((user) => user.uid === myUid);
 	return myRanking?.rank || null;
 }
+
