@@ -1,10 +1,59 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
+// Import audio files
+import timerSound from './timer.mp3'
+import musicSound from './music.mp3'
+
 const currentTime = ref('')
 const currentDate = ref('')
 const modal = ref({ show: false, title: '' })
+
+// Login flow state
+const loginState = ref({
+  show: false,
+  step: 'select', // 'select' | 'complete'
+  selectedBet: null
+})
+
+// Race state
+const raceState = ref({
+  show: false,
+  phase: 'countdown', // 'countdown' | 'racing' | 'result'
+  countdown: 3,
+  raceTime: 0,
+  results: []
+})
+
+// Register state
+const registerState = ref({
+  show: false
+})
+
+// Audio refs
+let timerAudio = null
+let musicAudio = null
+
+// Race participants (using betOptions as racers)
+const racers = [
+  { id: 1, icon: '🔥', name: 'ファイヤー', color: 'from-red-600 to-orange-500', progress: 0 },
+  { id: 2, icon: '⚡', name: 'サンダー', color: 'from-yellow-500 to-yellow-300', progress: 0 },
+  { id: 3, icon: '💧', name: 'ウォーター', color: 'from-blue-600 to-cyan-400', progress: 0 }
+]
+
+// Points by ranking
+const pointsByRank = [1000, 500, 100]
+
+// Bet options
+const betOptions = [
+  { id: 1, icon: '🔥', name: 'ファイヤー', color: 'from-red-600 to-orange-500', border: 'border-red-500' },
+  { id: 2, icon: '⚡', name: 'サンダー', color: 'from-yellow-500 to-yellow-300', border: 'border-yellow-400' },
+  { id: 3, icon: '💧', name: 'ウォーター', color: 'from-blue-600 to-cyan-400', border: 'border-blue-400' }
+]
+
 let timer
+let raceTimer = null
+let countdownTimer = null
 
 // Mock Data
 const rankingData = ref([
@@ -32,8 +81,152 @@ const updateTime = () => {
 
 const triggerAction = (actionName) => {
   console.log(`Action: ${actionName}`)
-  modal.value = { show: true, title: actionName.toUpperCase() }
-  setTimeout(() => { if(modal.value.show) closeModal() }, 1500)
+  if (actionName === 'Login') {
+    // Open login flow
+    loginState.value = { show: true, step: 'select', selectedBet: null }
+  } else if (actionName === 'Race') {
+    // Start race
+    startRace()
+  } else if (actionName === 'Register') {
+    // Open register screen
+    registerState.value.show = true
+  } else {
+    modal.value = { show: true, title: actionName.toUpperCase() }
+    setTimeout(() => { if(modal.value.show) closeModal() }, 1500)
+  }
+}
+
+// Race functions
+const startRace = () => {
+  // Reset race state
+  raceState.value = {
+    show: true,
+    phase: 'countdown',
+    countdown: 3,
+    raceTime: 0,
+    results: []
+  }
+  
+  // Reset racer progress
+  racers.forEach(r => r.progress = 0)
+  
+  // Play timer sound
+  timerAudio = new Audio(timerSound)
+  
+  // Wait for timer sound to finish before starting race
+  timerAudio.addEventListener('ended', () => {
+    beginRacing()
+  })
+  
+  timerAudio.play().catch(e => console.log('Audio play failed:', e))
+  
+  // Visual countdown for user feedback (approximate)
+  countdownTimer = setInterval(() => {
+    if (raceState.value.countdown > 0) {
+      raceState.value.countdown--
+    }
+  }, 1000)
+}
+
+const beginRacing = () => {
+  // Clear countdown timer
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+  
+  raceState.value.phase = 'racing'
+  
+  // Stop timer sound (if still playing) and play music
+  if (timerAudio) {
+    timerAudio.pause()
+    timerAudio = null
+  }
+  
+  musicAudio = new Audio(musicSound)
+  musicAudio.loop = true
+  musicAudio.play().catch(e => console.log('Audio play failed:', e))
+  
+  // Race duration (8 seconds)
+  const raceDuration = 8000
+  const updateInterval = 50
+  let elapsed = 0
+  
+  raceTimer = setInterval(() => {
+    elapsed += updateInterval
+    raceState.value.raceTime = elapsed
+    
+    // Update racer progress with random speed
+    racers.forEach(racer => {
+      const speed = Math.random() * 2 + 0.5
+      racer.progress = Math.min(100, racer.progress + speed)
+    })
+    
+    // Check if race is over
+    if (elapsed >= raceDuration) {
+      clearInterval(raceTimer)
+      finishRace()
+    }
+  }, updateInterval)
+}
+
+const finishRace = () => {
+  // Stop music
+  if (musicAudio) {
+    musicAudio.pause()
+    musicAudio = null
+  }
+  
+  // Calculate final results (sort by progress)
+  const sortedRacers = [...racers].sort((a, b) => b.progress - a.progress)
+  raceState.value.results = sortedRacers.map((racer, index) => ({
+    ...racer,
+    rank: index + 1,
+    points: pointsByRank[index] || 0
+  }))
+  
+  raceState.value.phase = 'result'
+}
+
+const closeRace = () => {
+  // Clean up
+  if (timerAudio) {
+    timerAudio.pause()
+    timerAudio = null
+  }
+  if (musicAudio) {
+    musicAudio.pause()
+    musicAudio = null
+  }
+  if (raceTimer) clearInterval(raceTimer)
+  if (countdownTimer) clearInterval(countdownTimer)
+  
+  raceState.value = {
+    show: false,
+    phase: 'countdown',
+    countdown: 3,
+    raceTime: 0,
+    results: []
+  }
+}
+
+const closeRegister = () => {
+  registerState.value.show = false
+}
+
+const selectBet = (bet) => {
+  loginState.value.selectedBet = bet
+  loginState.value.step = 'complete'
+  console.log(`Selected bet: ${bet.name}`)
+  
+  // Auto close after 2 seconds
+  setTimeout(() => {
+    closeLoginModal()
+  }, 2000)
+}
+
+const closeLoginModal = () => {
+  loginState.value = { show: false, step: 'select', selectedBet: null }
 }
 
 const closeModal = () => modal.value.show = false
@@ -235,6 +428,281 @@ onUnmounted(() => clearInterval(timer))
       </div>
     </div>
 
+    <!-- Login Modal -->
+    <div v-if="loginState.show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md">
+      
+      <!-- Step 1: Bet Selection -->
+      <div v-if="loginState.step === 'select'" class="text-center">
+        <!-- Header -->
+        <div class="mb-8">
+          <div class="bg-green-600 px-8 py-2 transform -skew-x-12 inline-block mb-4">
+            <h2 class="text-3xl font-black text-white italic transform skew-x-12 tracking-wider">
+              ⚡ ベットを選択 ⚡
+            </h2>
+          </div>
+          <p class="text-gray-400 text-sm">今日の運勢を選んでください</p>
+        </div>
+        
+        <!-- Bet Options -->
+        <div class="flex gap-6 justify-center">
+          <button 
+            v-for="bet in betOptions" 
+            :key="bet.id"
+            @click="selectBet(bet)"
+            class="group relative focus:outline-none transform transition-all duration-300 hover:scale-110 hover:-translate-y-2"
+          >
+            <!-- Card -->
+            <div :class="[
+              'w-40 h-52 border-4 transform -skew-x-6 relative overflow-hidden',
+              bet.border,
+              'bg-gradient-to-br',
+              bet.color,
+              'shadow-[0_0_30px_rgba(0,0,0,0.5)]',
+              'group-hover:shadow-[0_0_50px_rgba(255,255,255,0.3)]'
+            ]">
+              <!-- Shine effect -->
+              <div class="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              
+              <!-- Content -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center transform skew-x-6">
+                <span class="text-7xl mb-4 group-hover:scale-125 transition-transform duration-300 drop-shadow-lg">{{ bet.icon }}</span>
+                <span class="text-xl font-black text-white italic tracking-wider drop-shadow-md">{{ bet.name }}</span>
+              </div>
+              
+              <!-- Corner decorations -->
+              <div class="absolute top-0 left-0 w-6 h-6 bg-white/20"></div>
+              <div class="absolute bottom-0 right-0 w-6 h-6 bg-black/20"></div>
+            </div>
+          </button>
+        </div>
+        
+        <!-- Cancel button -->
+        <button 
+          @click="closeLoginModal" 
+          class="mt-8 text-gray-500 hover:text-white transition-colors text-sm"
+        >
+          ✕ キャンセル
+        </button>
+      </div>
+      
+      <!-- Step 2: Login Complete -->
+      <div v-if="loginState.step === 'complete'" class="text-center animate-pulse">
+        <div class="relative">
+          <!-- Glow effect -->
+          <div class="absolute inset-0 blur-3xl bg-green-500/30 rounded-full scale-150"></div>
+          
+          <!-- Content -->
+          <div class="relative">
+            <!-- Selected icon -->
+            <div class="text-9xl mb-6 animate-bounce">
+              {{ loginState.selectedBet?.icon }}
+            </div>
+            
+            <!-- Success message -->
+            <div class="bg-green-600 px-12 py-4 transform -skew-x-12 inline-block shadow-[0_0_50px_rgba(0,255,0,0.5)]">
+              <h2 class="text-4xl font-black text-white italic transform skew-x-12 tracking-wider">
+                ログイン完了！
+              </h2>
+            </div>
+            
+            <div class="mt-4 text-green-400 font-bold text-xl">
+              {{ loginState.selectedBet?.name }} で勝負！
+            </div>
+            
+            <div class="mt-6 text-gray-500 text-sm">
+              ホーム画面に戻ります...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Race Screen -->
+    <div v-if="raceState.show" class="fixed inset-0 z-50 bg-black flex flex-col">
+      
+      <!-- Race Header -->
+      <header class="h-20 bg-gradient-to-r from-purple-900 via-black to-purple-900 border-b-4 border-purple-500 flex items-center justify-center relative">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2220%22 height=%2220%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Ccircle cx=%222%22 cy=%222%22 r=%221%22 fill=%22%23ffffff10%22/%3E%3C/svg%3E')]"></div>
+        <h1 class="text-4xl font-black italic text-white tracking-wider transform -skew-x-6 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">
+          🏁 TODAY'S RACE 🏁
+        </h1>
+      </header>
+      
+      <!-- Race Content -->
+      <div class="flex-1 flex items-center justify-center p-8">
+        
+        <!-- Countdown Phase -->
+        <div v-if="raceState.phase === 'countdown'" class="text-center">
+          <div class="text-[200px] font-black text-white animate-pulse drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">
+            {{ raceState.countdown }}
+          </div>
+          <div class="text-2xl text-purple-400 font-bold tracking-widest animate-pulse">
+            GET READY...
+          </div>
+        </div>
+        
+        <!-- Racing Phase -->
+        <div v-if="raceState.phase === 'racing'" class="w-full max-w-4xl">
+          <div class="mb-8 text-center">
+            <span class="text-6xl font-black text-green-400 font-['Russo_One'] animate-pulse">
+              GO!!!
+            </span>
+          </div>
+          
+          <!-- Race Tracks -->
+          <div class="space-y-6">
+            <div v-for="racer in racers" :key="racer.id" class="relative">
+              <!-- Track Background -->
+              <div class="h-20 bg-gray-900 border-2 border-gray-700 rounded-lg relative overflow-hidden">
+                <!-- Track lines -->
+                <div class="absolute inset-0 opacity-20" style="background-image: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 52px);"></div>
+                
+                <!-- Progress bar -->
+                <div 
+                  :class="['absolute left-0 top-0 h-full bg-gradient-to-r transition-all duration-100', racer.color]"
+                  :style="{ width: racer.progress + '%' }"
+                ></div>
+                
+                <!-- Racer -->
+                <div 
+                  class="absolute top-1/2 -translate-y-1/2 text-5xl transition-all duration-100 drop-shadow-lg"
+                  :style="{ left: `calc(${racer.progress}% - 30px)` }"
+                >
+                  {{ racer.icon }}
+                </div>
+                
+                <!-- Racer name -->
+                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-white font-bold text-lg z-10 drop-shadow-md">
+                  {{ racer.name }}
+                </div>
+                
+                <!-- Finish line -->
+                <div class="absolute right-0 top-0 h-full w-4 bg-gradient-to-b from-white via-black to-white"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Race Time -->
+          <div class="mt-8 text-center">
+            <span class="text-gray-400 font-mono">TIME: </span>
+            <span class="text-2xl text-green-400 font-['Russo_One']">
+              {{ (raceState.raceTime / 1000).toFixed(2) }}s
+            </span>
+          </div>
+        </div>
+        
+        <!-- Result Phase -->
+        <div v-if="raceState.phase === 'result'" class="text-center w-full max-w-2xl">
+          <div class="mb-8">
+            <div class="bg-gradient-to-r from-yellow-600 to-yellow-400 px-12 py-4 transform -skew-x-12 inline-block shadow-[0_0_50px_rgba(234,179,8,0.5)]">
+              <h2 class="text-4xl font-black text-black italic transform skew-x-12 tracking-wider">
+                🏆 RACE RESULT 🏆
+              </h2>
+            </div>
+          </div>
+          
+          <!-- Results -->
+          <div class="space-y-4 mb-8">
+            <div 
+              v-for="result in raceState.results" 
+              :key="result.id"
+              :class="[
+                'flex items-center justify-between p-4 border-4 transform -skew-x-6',
+                result.rank === 1 ? 'bg-yellow-900/50 border-yellow-500 scale-110' : 
+                result.rank === 2 ? 'bg-gray-700/50 border-gray-400' : 
+                'bg-orange-900/30 border-orange-600'
+              ]"
+            >
+              <div class="flex items-center gap-4 transform skew-x-6">
+                <span :class="[
+                  'text-4xl font-black italic',
+                  result.rank === 1 ? 'text-yellow-400' : 
+                  result.rank === 2 ? 'text-gray-300' : 'text-orange-400'
+                ]">
+                  {{ result.rank === 1 ? '👑' : result.rank }}
+                </span>
+                <span class="text-5xl">{{ result.icon }}</span>
+                <span class="text-2xl font-bold text-white">{{ result.name }}</span>
+              </div>
+              <div class="transform skew-x-6 text-right">
+                <div class="text-3xl font-black text-green-400 font-['Russo_One']">
+                  +{{ result.points.toLocaleString() }}
+                </div>
+                <div class="text-sm text-gray-400">POINTS</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Back Button -->
+          <button 
+            @click="closeRace"
+            class="group relative focus:outline-none mt-4"
+          >
+            <div class="bg-green-600 border-4 border-white px-12 py-4 transform -skew-x-12 shadow-[6px_6px_0px_rgba(0,0,0,0.5)] group-hover:bg-green-500 group-hover:-translate-y-1 transition-all">
+              <span class="text-2xl font-black italic text-white transform skew-x-12 inline-block tracking-wider">
+                ← ホームに戻る
+              </span>
+            </div>
+          </button>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- Register Screen -->
+    <div v-if="registerState.show" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center">
+      <div class="text-center">
+        <!-- Main instruction -->
+        <div class="mb-12">
+          <div class="relative inline-block">
+            <!-- Glow effect -->
+            <div class="absolute inset-0 blur-3xl bg-blue-500/30 rounded-full scale-150"></div>
+            
+            <!-- Icon -->
+            <div class="relative text-9xl mb-8 animate-pulse">
+              📱
+            </div>
+          </div>
+          
+          <!-- Text -->
+          <div class="bg-blue-600 px-12 py-6 transform -skew-x-12 inline-block shadow-[0_0_50px_rgba(59,130,246,0.5)] mb-4">
+            <h2 class="text-4xl font-black text-white italic transform skew-x-12 tracking-wider">
+              NFC カードをかざしてください
+            </h2>
+          </div>
+          
+          <div class="mt-6 text-gray-400 text-lg">
+            カードリーダーに近づけてお待ちください
+          </div>
+          
+          <!-- Animated rings (NFC signal effect) -->
+          <div class="relative h-32 mt-8">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <div class="w-20 h-20 border-4 border-blue-500 rounded-full animate-ping"></div>
+            </div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animation-delay-150">
+              <div class="w-20 h-20 border-4 border-blue-400 rounded-full animate-ping"></div>
+            </div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animation-delay-300">
+              <div class="w-20 h-20 border-4 border-blue-300 rounded-full animate-ping"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Back button -->
+        <button 
+          @click="closeRegister"
+          class="group relative focus:outline-none mt-8"
+        >
+          <div class="bg-gray-700 border-4 border-gray-500 px-12 py-4 transform -skew-x-12 shadow-[6px_6px_0px_rgba(0,0,0,0.5)] group-hover:bg-gray-600 group-hover:-translate-y-1 transition-all">
+            <span class="text-2xl font-black italic text-white transform skew-x-12 inline-block tracking-wider">
+              ← 戻る
+            </span>
+          </div>
+        </button>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -322,6 +790,14 @@ body {
 }
 .animate-spin-slow { 
   animation: spin-slow 10s linear infinite; 
+}
+
+/* Animation delays for NFC rings */
+.animation-delay-150 {
+  animation-delay: 0.15s;
+}
+.animation-delay-300 {
+  animation-delay: 0.3s;
 }
 
 /* Clip paths for corner decorations */
