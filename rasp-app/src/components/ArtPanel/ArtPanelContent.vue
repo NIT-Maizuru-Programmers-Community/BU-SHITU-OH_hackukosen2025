@@ -104,29 +104,31 @@ onUnmounted(() => {
 <style scoped>
 .art-panel-inline {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   width: 100%;
   height: 100%;
   padding: 0.25rem;
-  gap: 0.25rem;
+  gap: 0.5rem;
 }
 
 .art-panel-grid {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 0;
-  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
 }
 
 .art-panel-status {
-  width: 100%;
+  width: 180px;
   background: rgba(0, 0, 0, 0.9);
   border: 2px solid #a855f7;
   border-radius: 6px;
-  padding: 0.4rem 0.8rem;
+  padding: 0.6rem 0.8rem;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .status-row {

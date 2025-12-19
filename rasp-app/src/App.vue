@@ -792,8 +792,8 @@ onUnmounted(() => {
     <main class="relative z-10 flex-1 flex gap-10 p-10 pb-6 min-h-0">
       
       <!-- LEFT: Art Panel -->
-      <section class="flex-[3] relative flex flex-col min-h-0">
-        <div class="w-full h-full border-4 border-purple-500 bg-gray-900 relative shadow-[0_0_20px_rgba(147,51,234,0.3)] overflow-hidden">
+      <section class="flex-shrink-0 relative flex flex-col min-h-0">
+        <div class="h-full border-4 border-purple-500 bg-gray-900 relative shadow-[0_0_20px_rgba(147,51,234,0.3)] overflow-hidden">
           <!-- Corner Deco -->
           <div class="absolute top-0 left-0 w-16 h-16 bg-purple-600 z-20 clip-path-triangle"></div>
           <div class="absolute bottom-0 right-0 w-16 h-16 bg-purple-600 z-20 clip-path-triangle-br"></div>
@@ -814,11 +814,11 @@ onUnmounted(() => {
         </div>
       </section>
 
-      <!-- RIGHT: Ranking -->
-      <section class="flex-[1] min-w-[450px] flex flex-col">
+      <!-- CENTER: Ranking -->
+      <section class="flex-1 min-w-[320px] flex flex-col">
         <!-- Header -->
-        <div class="bg-black border-3 border-green-500 px-8 py-3 mb-4 transform -skew-x-12 w-full shadow-[4px_4px_0px_rgba(0,255,0,0.3)]">
-          <h3 class="text-3xl font-black italic text-white text-center transform skew-x-12 tracking-wider">
+        <div class="bg-black border-3 border-green-500 px-6 py-3 mb-4 transform -skew-x-12 w-full shadow-[4px_4px_0px_rgba(0,255,0,0.3)]">
+          <h3 class="text-2xl font-black italic text-white text-center transform skew-x-12 tracking-wider">
             🏆 RANKING
           </h3>
         </div>
@@ -870,22 +870,23 @@ onUnmounted(() => {
           </div>
         </div>
         
-        <!-- EVENT SCHEDULE (ランキングの下) -->
-        <div class="mt-6 flex flex-col transform -skew-x-6">
-          <!-- Event Header -->
-          <div class="bg-gradient-to-r from-purple-900 to-black border border-purple-500 px-4 py-3 mb-3">
-            <h3 class="text-base font-black text-purple-300 tracking-widest text-center transform skew-x-6">EVENT SCHEDULE</h3>
-          </div>
-          
-          <!-- Event List -->
-          <div class="bg-black/50 border border-gray-700 p-4 space-y-3">
-            <div v-for="(event, i) in eventData" :key="i" class="flex items-center justify-between text-base border-b border-gray-800 pb-3 last:border-0 transform skew-x-6">
-              <div>
-                <span class="text-green-400 font-bold mr-3">{{ event.date }}</span>
-                <span class="text-gray-200">{{ event.title }}</span>
-              </div>
-              <span class="bg-red-600 text-white px-3 py-1 font-bold text-sm rounded">{{ event.bonus }}</span>
+      </section>
+
+      <!-- RIGHT: EVENT SCHEDULE -->
+      <section class="flex-1 min-w-[280px] flex flex-col">
+        <!-- Event Header -->
+        <div class="bg-gradient-to-r from-purple-900 to-black border-3 border-purple-500 px-6 py-3 mb-4 transform -skew-x-12 shadow-[4px_4px_0px_rgba(147,51,234,0.3)]">
+          <h3 class="text-xl font-black italic text-purple-300 tracking-widest text-center transform skew-x-12">📅 EVENT SCHEDULE</h3>
+        </div>
+        
+        <!-- Event List -->
+        <div class="flex-1 bg-black/50 border-2 border-purple-700 p-4 space-y-3 overflow-y-auto no-scrollbar">
+          <div v-for="(event, i) in eventData" :key="i" class="flex flex-col text-base border-b border-gray-800 pb-3 last:border-0">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-green-400 font-bold">{{ event.date }}</span>
+              <span class="bg-red-600 text-white px-2 py-0.5 font-bold text-xs rounded">{{ event.bonus }}</span>
             </div>
+            <span class="text-gray-200 text-sm">{{ event.title }}</span>
           </div>
         </div>
       </section>
