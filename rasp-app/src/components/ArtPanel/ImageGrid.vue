@@ -64,20 +64,19 @@ const drawGrid = () => {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-  // Canvasのサイズを親コンテナに合わせて調整（マージンなしで最大化）
+  // 縦をフルサイズにして、横も同じサイズで正方形にする
   const container = canvas.parentElement
-  const containerWidth = container ? container.clientWidth : 6000
-  const containerHeight = container ? container.clientHeight : 6000
-  const containerSize = Math.min(containerWidth, containerHeight)
+  const containerHeight = container ? container.clientHeight : 600
+  const canvasSize = containerHeight // 縦のサイズを基準にする
   
-  canvas.width = containerSize
-  canvas.height = containerSize
+  canvas.width = canvasSize
+  canvas.height = canvasSize
 
-  const cellWidth = containerSize / GRID_COLS
-  const cellHeight = containerSize / GRID_ROWS
+  const cellWidth = canvasSize / GRID_COLS
+  const cellHeight = canvasSize / GRID_ROWS
 
   // 背景をクリア
-  ctx.clearRect(0, 0, containerSize, containerSize)
+  ctx.clearRect(0, 0, canvasSize, canvasSize)
 
   // 9つのセルを描画
   for (let row = 0; row < GRID_ROWS; row++) {
@@ -129,6 +128,8 @@ const drawGrid = () => {
 }
 
 .canvas-wrapper {
+  width: 100%;
+  height: 100%;
   position: relative;
   border: 3px solid #a855f7;
   border-radius: 12px;
@@ -139,5 +140,8 @@ const drawGrid = () => {
 .grid-canvas {
   display: block;
   border-radius: 9px;
+  height: 100%;
+  flex:content;
+  
 }
 </style>
