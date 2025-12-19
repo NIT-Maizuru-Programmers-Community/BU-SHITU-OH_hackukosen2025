@@ -107,8 +107,8 @@ onUnmounted(() => {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  padding: 0.5rem;
-  gap: 0.5rem;
+  padding: 0.25rem;
+  gap: 0.25rem;
 }
 
 .art-panel-grid {
@@ -124,8 +124,8 @@ onUnmounted(() => {
   width: 100%;
   background: rgba(0, 0, 0, 0.9);
   border: 2px solid #a855f7;
-  border-radius: 8px;
-  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
   flex-shrink: 0;
 }
 

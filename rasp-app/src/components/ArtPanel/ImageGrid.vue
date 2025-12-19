@@ -64,11 +64,11 @@ const drawGrid = () => {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-  // Canvasのサイズを親コンテナに合わせて調整（領域いっぱいに）
+  // Canvasのサイズを親コンテナに合わせて調整（マージンなしで最大化）
   const container = canvas.parentElement
-  const containerWidth = container ? container.clientWidth : 500
-  const containerHeight = container ? container.clientHeight : 500
-  const containerSize = Math.min(containerWidth, containerHeight) - 10
+  const containerWidth = container ? container.clientWidth : 6000
+  const containerHeight = container ? container.clientHeight : 6000
+  const containerSize = Math.min(containerWidth, containerHeight)
   
   canvas.width = containerSize
   canvas.height = containerSize

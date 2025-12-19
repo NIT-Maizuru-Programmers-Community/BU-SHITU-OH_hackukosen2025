@@ -808,7 +808,7 @@ onUnmounted(() => {
           </div>
           
           <!-- Art Panel Content -->
-          <div class="w-full h-full flex items-center justify-center pt-12">
+          <div class="w-full h-full flex items-center justify-center pt-14 pb-2 px-2">
             <ArtPanelContent />
           </div>
         </div>
