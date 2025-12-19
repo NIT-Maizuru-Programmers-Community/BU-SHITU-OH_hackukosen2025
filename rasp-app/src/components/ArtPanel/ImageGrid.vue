@@ -64,8 +64,12 @@ const drawGrid = () => {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-  // Canvasのサイズを親コンテナに合わせて調整
-  const containerSize = Math.min(350, window.innerHeight * 0.4)
+  // Canvasのサイズを親コンテナに合わせて調整（領域いっぱいに）
+  const container = canvas.parentElement
+  const containerWidth = container ? container.clientWidth : 500
+  const containerHeight = container ? container.clientHeight : 500
+  const containerSize = Math.min(containerWidth, containerHeight) - 10
+  
   canvas.width = containerSize
   canvas.height = containerSize
 
@@ -87,25 +91,26 @@ const drawGrid = () => {
 
         const img = images.value.get(task.imageName)
         if (img) {
-          // 画像を描画
-          ctx.drawImage(img, x, y, cellWidth, cellHeight)
-
-          // 未完了の場合はオーバーレイを表示
+          // 未完了の場合は完全に黒塗り（何も見えないように）
           if (!task.completed) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+            // 完全に黒塗り
+            ctx.fillStyle = '#0a0a0a'
             ctx.fillRect(x, y, cellWidth, cellHeight)
 
             // ロックアイコン
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-            ctx.font = '32px Arial'
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.5)'
+            ctx.font = `${Math.min(cellWidth, cellHeight) * 0.35}px Arial`
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
             ctx.fillText('🔒', x + cellWidth / 2, y + cellHeight / 2)
+          } else {
+            // 完了済みの場合は画像を描画
+            ctx.drawImage(img, x, y, cellWidth, cellHeight)
           }
         }
 
         // グリッド線
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+        ctx.strokeStyle = 'rgba(168, 85, 247, 0.5)'
         ctx.lineWidth = 2
         ctx.strokeRect(x, y, cellWidth, cellHeight)
       }

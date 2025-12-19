@@ -7,8 +7,9 @@
     <!-- Status Info -->
     <div class="art-panel-status">
       <div class="status-row">
-        <span class="status-label">進捗</span>
+        <span class="status-label">🎯 進捗</span>
         <span class="status-value">{{ completedCount }}/{{ tasks.length }}</span>
+        <span class="status-percent">({{ progressPercentage }}%)</span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
@@ -16,7 +17,7 @@
       <div v-if="nextTask" class="next-task">
         <span class="next-label">NEXT:</span>
         <span class="next-name">{{ nextTask.name }}</span>
-        <span class="next-count">({{ nextTask.unlockCount }}人)</span>
+        <span class="next-count">あと{{ nextTask.unlockCount - currentCount }}人</span>
       </div>
       <div v-else class="all-clear">
         <span class="all-clear-text">🎉 ALL CLEAR!</span>
@@ -104,11 +105,10 @@ onUnmounted(() => {
 .art-panel-inline {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
   width: 100%;
   height: 100%;
-  padding: 1rem;
+  padding: 0.5rem;
+  gap: 0.5rem;
 }
 
 .art-panel-grid {
@@ -117,42 +117,50 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   min-height: 0;
+  width: 100%;
 }
 
 .art-panel-status {
   width: 100%;
-  max-width: 400px;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.9);
   border: 2px solid #a855f7;
   border-radius: 8px;
-  padding: 0.8rem 1rem;
+  padding: 0.6rem 1rem;
+  flex-shrink: 0;
 }
 
 .status-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 0.5rem;
+  gap: 0.8rem;
+  margin-bottom: 0.4rem;
 }
 
 .status-label {
   color: #a855f7;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .status-value {
   color: #ffffff;
   font-weight: 900;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-family: 'Russo One', monospace;
+}
+
+.status-percent {
+  color: #a855f7;
+  font-weight: bold;
+  font-size: 0.9rem;
 }
 
 .progress-bar {
   width: 100%;
-  height: 6px;
+  height: 8px;
   background: rgba(168, 85, 247, 0.2);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
   margin-bottom: 0.5rem;
 }
@@ -160,16 +168,17 @@ onUnmounted(() => {
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #a855f7, #7c3aed);
-  border-radius: 3px;
+  border-radius: 4px;
   transition: width 0.5s ease;
-  box-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
 }
 
 .next-task {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
 }
 
 .next-label {
@@ -183,8 +192,9 @@ onUnmounted(() => {
 }
 
 .next-count {
-  color: #9ca3af;
-  font-size: 0.8rem;
+  color: #fbbf24;
+  font-weight: bold;
+  font-size: 0.9rem;
 }
 
 .all-clear {
@@ -194,17 +204,19 @@ onUnmounted(() => {
 .all-clear-text {
   color: #ffd700;
   font-weight: 900;
-  font-size: 1rem;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  font-size: 1.1rem;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
   animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.7;
+    opacity: 0.8;
+    transform: scale(1.02);
   }
 }
 </style>
