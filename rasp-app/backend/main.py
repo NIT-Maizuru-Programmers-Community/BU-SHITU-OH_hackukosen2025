@@ -632,11 +632,17 @@ def award_points_to_user(user_id: str, amount: int, bet_type: str, description: 
         結果を含む辞書
     """
     try:
-        print(f"\n=== ポイント付与開始 ===")
+        print(f"\n{'='*60}")
+        print(f"=== ポイント付与開始 ===")
+        print(f"{'='*60}")
+        print(f"URL: {API_ENDPOINT}/api/points/award")
+        print(f"API Key: {API_KEY}")
         print(f"User ID: {user_id}")
         print(f"Amount: {amount}")
         print(f"Type: {bet_type}")
         print(f"Description: {description}")
+        if related_id:
+            print(f"Related ID: {related_id}")
         
         url = f'{API_ENDPOINT}/api/points/award'
         
@@ -650,6 +656,8 @@ def award_points_to_user(user_id: str, amount: int, bet_type: str, description: 
         if related_id:
             payload['relatedId'] = related_id
         
+        print(f"\nRequest Payload: {payload}")
+        
         response = requests.post(
             url,
             headers={
@@ -660,16 +668,20 @@ def award_points_to_user(user_id: str, amount: int, bet_type: str, description: 
             timeout=10
         )
         
-        print(f"Response Status: {response.status_code}")
+        print(f"\nResponse Status: {response.status_code}")
+        print(f"Response Headers: {dict(response.headers)}")
         
         if response.status_code == 200:
             data = response.json()
-            print(f"✓ ポイント付与成功: {data}")
+            print(f"✓ ポイント付与成功!")
+            print(f"Response Data: {data}")
+            print(f"{'='*60}\n")
             return {'success': True, 'data': data}
         else:
             error_msg = f'サーバーエラー (HTTP {response.status_code})'
             print(f"✗ {error_msg}")
-            print(f"Response: {response.text}")
+            print(f"Response Body: {response.text}")
+            print(f"{'='*60}\n")
             return {
                 'success': False,
                 'error': error_msg,
