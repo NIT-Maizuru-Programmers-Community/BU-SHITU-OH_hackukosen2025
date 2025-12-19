@@ -79,6 +79,41 @@ const attendanceCount = ref(0)
 const attendanceLoading = ref(false)
 const attendanceError = ref(null)
 
+// Bet Data
+const currentBets = ref([])
+const betsLoading = ref(false)
+const betsError = ref(null)
+
+// 現在のベット情報を取得
+const fetchCurrentBets = async () => {
+  betsLoading.value = true
+  betsError.value = null
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/bets`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const result = await response.json()
+    currentBets.value = result.bets || []
+    
+    console.log('Current bets fetched:', currentBets.value)
+  } catch (error) {
+    console.error('Failed to fetch current bets:', error)
+    betsError.value = error.message
+    currentBets.value = []
+  } finally {
+    betsLoading.value = false
+  }
+}
+
 // ランキング取得（FastAPIバックエンド経由）
 const fetchRanking = async (limit = 10) => {
   rankingLoading.value = true
@@ -236,6 +271,12 @@ const submitRaceResult = async (results) => {
     console.error('Failed to submit race result:', error)
     throw error
   }
+}
+
+// 各駒にベットしたユーザーを取得するヘルパー関数
+const getRacerSupporters = (racerId) => {
+  const racerBets = currentBets.value.filter(bet => bet.bet === racerId)
+  return racerBets.map(bet => bet.username)
 }
 
 // 定期的にランキングと人数を更新（60秒ごと）
@@ -415,6 +456,9 @@ const startRace = () => {
   
   // Reset racer progress
   racers.forEach(r => r.progress = 0)
+  
+  // Fetch current bets to display who bet on whom
+  fetchCurrentBets()
   
   // Play timer sound
   timerAudio = new Audio(timerSound)
@@ -1183,7 +1227,7 @@ onUnmounted(() => {
           <div class="space-y-6">
             <div v-for="racer in racers" :key="racer.id" class="relative">
               <!-- Track Background -->
-              <div class="h-20 bg-gray-900 border-2 border-gray-700 rounded-lg relative overflow-hidden">
+              <div class="h-24 bg-gray-900 border-2 border-gray-700 rounded-lg relative overflow-hidden">
                 <!-- Track lines -->
                 <div class="absolute inset-0 opacity-20" style="background-image: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 52px);"></div>
                 
@@ -1201,9 +1245,17 @@ onUnmounted(() => {
                   {{ racer.icon }}
                 </div>
                 
-                <!-- Racer name -->
-                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-white font-bold text-lg z-10 drop-shadow-md">
+                <!-- Racer info (left side) -->
+                <div class="absolute left-4 top-2 text-white font-bold text-lg z-10 drop-shadow-md">
                   {{ racer.name }}
+                </div>
+                
+                <!-- Supporters (bottom left) -->
+                <div class="absolute left-4 bottom-2 text-xs text-gray-300 z-10 drop-shadow-md max-w-[50%] truncate">
+                  <span v-if="getRacerSupporters(racer.id).length > 0">
+                    🎯 {{ getRacerSupporters(racer.id).join(', ') }}
+                  </span>
+                  <span v-else class="opacity-50">誰もベットしていません</span>
                 </div>
                 
                 <!-- Finish line -->
