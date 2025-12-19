@@ -49,9 +49,9 @@ let musicAudio = null
 
 // Race participants (using betOptions as racers)
 const racers = [
-  { id: 1, icon: '🇨', name: 'C言語', color: 'from-blue-700 to-blue-500', border: 'border-blue-500', progress: 0 },
-  { id: 2, icon: '🐍', name: 'Python', color: 'from-yellow-500 to-green-500', border: 'border-green-400', progress: 0 },
-  { id: 3, icon: '🟨', name: 'JavaScript', color: 'from-yellow-400 to-yellow-300', border: 'border-yellow-400', progress: 0 }
+  { id: 1, icon: '❶', name: '1番', color: 'from-blue-600 to-blue-400', border: 'border-blue-500', bgColor: 'bg-blue-600', textColor: 'text-blue-500', progress: 0 },
+  { id: 2, icon: '❷', name: '2番', color: 'from-red-600 to-red-400', border: 'border-red-500', bgColor: 'bg-red-600', textColor: 'text-red-500', progress: 0 },
+  { id: 3, icon: '❸', name: '3番', color: 'from-yellow-500 to-yellow-300', border: 'border-yellow-400', bgColor: 'bg-yellow-500', textColor: 'text-yellow-500', progress: 0 }
 ]
 
 // Points by ranking
@@ -59,9 +59,9 @@ const pointsByRank = [100, 50, 10]
 
 // Bet options
 const betOptions = [
-  { id: 1, icon: '🇨', name: 'C言語', color: 'from-blue-700 to-blue-500', border: 'border-blue-500' },
-  { id: 2, icon: '🐍', name: 'Python', color: 'from-yellow-500 to-green-500', border: 'border-green-400' },
-  { id: 3, icon: '🟨', name: 'JavaScript', color: 'from-yellow-400 to-yellow-300', border: 'border-yellow-400' }
+  { id: 1, icon: '❶', name: '1番', color: 'from-blue-600 to-blue-400', border: 'border-blue-500', bgColor: 'bg-blue-600', textColor: 'text-blue-500' },
+  { id: 2, icon: '❷', name: '2番', color: 'from-red-600 to-red-400', border: 'border-red-500', bgColor: 'bg-red-600', textColor: 'text-red-500' },
+  { id: 3, icon: '❸', name: '3番', color: 'from-yellow-500 to-yellow-300', border: 'border-yellow-400', bgColor: 'bg-yellow-500', textColor: 'text-yellow-500' }
 ]
 
 let timer
@@ -235,9 +235,9 @@ const submitRaceResult = async (results) => {
   try {
     // キャラクターIDのマッピング
     const characterIdMap = {
-      'C言語': 'c',
-      'Python': 'python',
-      'JavaScript': 'javascript'
+      '1番': 'racer1',
+      '2番': 'racer2',
+      '3番': 'racer3'
     }
     
     const characters = results.map(result => ({
