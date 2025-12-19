@@ -29,8 +29,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import ImageGrid from './ImageGrid.vue'
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+import { eventBus } from '../../utils/eventBus.js'
 
 // タスク定義
 const tasks = ref([
@@ -45,59 +44,62 @@ const tasks = ref([
   { id: 8, name: '部室王', completed: false, imageName: '9.png', unlockCount: 9 },
 ])
 
-const currentCount = ref(0)
-let intervalId = null
+// 現在の解放数（ログイン回数ベース）
+const unlockedCount = ref(0)
 
 // Computed properties
 const completedCount = computed(() => tasks.value.filter(task => task.completed).length)
 const progressPercentage = computed(() => Math.round((completedCount.value / tasks.value.length) * 100))
 const nextTask = computed(() => tasks.value.find(task => !task.completed))
+// 互換性のためにcurrentCountを維持
+const currentCount = computed(() => unlockedCount.value)
 
-// 来室者数を取得
-const fetchAttendanceCount = async () => {
-  try {
-    const response = await fetch(`${BACKEND_URL}/api/attendance/count`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const result = await response.json()
-    currentCount.value = result.data?.count || 0
-    
-    // タスクの完了状態を更新
-    updateTasksByCount()
-    
-    console.log('Art Panel: Attendance count fetched:', currentCount.value)
-  } catch (error) {
-    console.error('Art Panel: Failed to fetch attendance count:', error)
+// ログイン成功時にパネルを解放
+const onLoginSuccess = () => {
+  // 9枚全て解放済みの場合はリセット
+  if (unlockedCount.value >= 9) {
+    unlockedCount.value = 1
+    console.log('Art Panel: All panels were unlocked, resetting to 1')
+  } else {
+    unlockedCount.value++
+    console.log('Art Panel: Panel unlocked, count:', unlockedCount.value)
   }
+  
+  // タスクの完了状態を更新
+  updateTasksByUnlockedCount()
+  
+  // localStorageに保存
+  localStorage.setItem('artPanelUnlockedCount', unlockedCount.value.toString())
 }
 
-// カウントに基づいてタスクの完了状態を更新
-const updateTasksByCount = () => {
+// 解放数に基づいてタスクの完了状態を更新
+const updateTasksByUnlockedCount = () => {
   tasks.value.forEach(task => {
-    task.completed = currentCount.value >= task.unlockCount
+    task.completed = unlockedCount.value >= task.unlockCount
   })
 }
 
+// localStorageから解放状態を復元
+const loadUnlockedCount = () => {
+  const saved = localStorage.getItem('artPanelUnlockedCount')
+  if (saved) {
+    unlockedCount.value = parseInt(saved, 10) || 0
+    updateTasksByUnlockedCount()
+    console.log('Art Panel: Loaded unlocked count from storage:', unlockedCount.value)
+  }
+}
+
 onMounted(() => {
-  // 初回取得
-  fetchAttendanceCount()
+  // localStorageから復元
+  loadUnlockedCount()
   
-  // 30秒ごとに更新
-  intervalId = setInterval(fetchAttendanceCount, 30000)
+  // ログイン成功イベントをリッスン
+  eventBus.on('login-success', onLoginSuccess)
 })
 
 onUnmounted(() => {
-  if (intervalId) {
-    clearInterval(intervalId)
-  }
+  // イベントリスナーを解除
+  eventBus.off('login-success', onLoginSuccess)
 })
 </script>
 

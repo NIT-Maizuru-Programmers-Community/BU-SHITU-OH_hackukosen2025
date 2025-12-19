@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import ArtPanelContent from './components/ArtPanel/ArtPanelContent.vue'
+import { eventBus } from './utils/eventBus.js'
 
 // Import audio files
 import timerSound from './timer.mp3'
@@ -394,6 +395,9 @@ const setNFCMode = async (mode) => {
 const handleLoginResult = (data) => {
   if (loginState.value.show && loginState.value.step === 'waiting') {
     if (data.success) {
+      // ログイン成功 → アートパネル解放イベントを発火
+      eventBus.emit('login-success')
+      
       // ログイン成功 → ベット選択画面へ
       const user = data.data?.user || {}
       const bonus = data.data?.bonus || {}
