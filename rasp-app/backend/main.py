@@ -11,7 +11,7 @@ import nfc
 import asyncio
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import requests
 import os
 from typing import Optional, Dict, List
@@ -423,7 +423,9 @@ def on_nfc_connect(tag):
     
     # 連続タップ防止
     if card_id == last_card_id and (current_time - last_tap_time) < CARD_COOLDOWN:
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] 同じカードの連続タップを無視")
+        from datetime import timezone, timedelta
+        jst = timezone(timedelta(hours=9))
+        print(f"[{datetime.now(jst).strftime('%H:%M:%S')}] 同じカードの連続タップを無視")
         while tag.is_present:
             time.sleep(0.1)
         return True
@@ -431,13 +433,17 @@ def on_nfc_connect(tag):
     last_card_id = card_id
     last_tap_time = current_time
     
-    print(f"\n[{datetime.now().strftime('%H:%M:%S')}] カード検出: {card_id} (モード: {nfc_mode})")
+    from datetime import timezone, timedelta
+    jst = timezone(timedelta(hours=9))
+    print(f"\n[{datetime.now(jst).strftime('%H:%M:%S')}] カード検出: {card_id} (モード: {nfc_mode})")
     
     # WebSocketで検出を通知
+    from datetime import timezone, timedelta
+    jst = timezone(timedelta(hours=9))
     asyncio.run(broadcast_to_clients({
         'type': 'card_detected',
         'cardId': card_id,
-        'timestamp': datetime.now().isoformat(),
+        'timestamp': datetime.now(jst).isoformat(),
         'mode': nfc_mode
     }))
     
@@ -800,7 +806,6 @@ def submit_race_result(characters: List[Dict], bets: Optional[List[Dict]] = None
     """
     try:
         from datetime import datetime
-        import pytz
         import traceback
         
         print(f"\n=== レース結果送信開始 ===")
@@ -810,7 +815,7 @@ def submit_race_result(characters: List[Dict], bets: Optional[List[Dict]] = None
         if not bets:
             bets = []
         
-        jst = pytz.timezone('Asia/Tokyo')
+        jst = timezone(timedelta(hours=9))
         now_jst = datetime.now(jst)
         date_str = now_jst.strftime('%Y-%m-%d')
         timestamp_str = now_jst.isoformat()
@@ -1008,11 +1013,13 @@ async def get_today_attendance_count():
                 print(f"Traceback: {result['traceback']}")
             
             # フォールバック: ダミー値を返す
+            from datetime import timezone, timedelta
+            jst = timezone(timedelta(hours=9))
             print("⚠ フォールバック: ダミー値を返します")
             return {
                 'success': True,
                 'data': {
-                    'date': datetime.now().strftime('%Y-%m-%d'),
+                    'date': datetime.now(jst).strftime('%Y-%m-%d'),
                     'count': 0
                 }
             }
@@ -1023,10 +1030,12 @@ async def get_today_attendance_count():
         print(error_trace)
         
         # エラー時もダミー値を返す
+        from datetime import timezone, timedelta
+        jst = timezone(timedelta(hours=9))
         return {
             'success': True,
             'data': {
-                'date': datetime.now().strftime('%Y-%m-%d'),
+                'date': datetime.now(jst).strftime('%Y-%m-%d'),
                 'count': 0
             }
         }
@@ -1233,10 +1242,12 @@ async def websocket_nfc(websocket: WebSocket):
     
     try:
         # 接続確認メッセージ
+        from datetime import timezone, timedelta
+        jst = timezone(timedelta(hours=9))
         await websocket.send_json({
             'type': 'connected',
             'message': 'NFCリーダー待機中',
-            'timestamp': datetime.now().isoformat()
+            'timestamp': datetime.now(jst).isoformat()
         })
         
         # クライアントからのメッセージを待機
