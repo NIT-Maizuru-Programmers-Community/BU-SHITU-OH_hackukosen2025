@@ -47,9 +47,9 @@ let musicAudio = null
 
 // Race participants (using betOptions as racers)
 const racers = [
-  { id: 1, icon: '🇨', name: 'C言語', color: 'from-blue-700 to-blue-500', progress: 0 },
-  { id: 2, icon: '🐍', name: 'Python', color: 'from-yellow-500 to-green-500', progress: 0 },
-  { id: 3, icon: '🟨', name: 'JavaScript', color: 'from-yellow-400 to-yellow-300', progress: 0 }
+  { id: 1, icon: '🇨', name: 'C言語', color: 'from-blue-700 to-blue-500', border: 'border-blue-500', progress: 0 },
+  { id: 2, icon: '🐍', name: 'Python', color: 'from-yellow-500 to-green-500', border: 'border-green-400', progress: 0 },
+  { id: 3, icon: '🟨', name: 'JavaScript', color: 'from-yellow-400 to-yellow-300', border: 'border-yellow-400', progress: 0 }
 ]
 
 // Points by ranking
@@ -1216,50 +1216,46 @@ onUnmounted(() => {
         </div>
         
         <!-- Racing Phase -->
-        <div v-if="raceState.phase === 'racing'" class="w-full max-w-4xl">
+        <div v-if="raceState.phase === 'racing'" class="w-full max-w-6xl">
           <div class="mb-8 text-center">
             <span class="text-6xl font-black text-green-400 font-['Russo_One'] animate-pulse">
               GO!!!
             </span>
           </div>
           
-          <!-- Race Tracks -->
-          <div class="space-y-6">
+          <!-- Race Participants Display -->
+          <div class="flex gap-8 justify-center">
             <div v-for="racer in racers" :key="racer.id" class="relative">
-              <!-- Track Background -->
-              <div class="h-24 bg-gray-900 border-2 border-gray-700 rounded-lg relative overflow-hidden">
-                <!-- Track lines -->
-                <div class="absolute inset-0 opacity-20" style="background-image: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 52px);"></div>
-                
-                <!-- Progress bar -->
-                <div 
-                  :class="['absolute left-0 top-0 h-full bg-gradient-to-r transition-all duration-100', racer.color]"
-                  :style="{ width: racer.progress + '%' }"
-                ></div>
-                
-                <!-- Racer -->
-                <div 
-                  class="absolute top-1/2 -translate-y-1/2 text-5xl transition-all duration-100 drop-shadow-lg"
-                  :style="{ left: `calc(${racer.progress}% - 30px)` }"
-                >
-                  {{ racer.icon }}
+              <!-- Card -->
+              <div :class="[
+                'w-48 h-64 border-4 transform -skew-x-6 relative overflow-hidden',
+                racer.border,
+                'bg-gradient-to-br',
+                racer.color,
+                'shadow-[0_0_30px_rgba(0,0,0,0.5)]'
+              ]">
+                <!-- Content -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center transform skew-x-6">
+                  <span class="text-8xl mb-4 transition-transform duration-300 drop-shadow-lg">{{ racer.icon }}</span>
+                  <span class="text-xl font-black text-white italic tracking-wider drop-shadow-md">{{ racer.name }}</span>
+                  
+                  <!-- Supporters -->
+                  <div class="mt-4 text-center px-2">
+                    <div v-if="getRacerSupporters(racer.id).length > 0" class="text-sm text-gray-200">
+                      <div class="text-yellow-300">🎯 応援者</div>
+                      <div class="text-xs mt-1 max-h-16 overflow-y-auto">
+                        {{ getRacerSupporters(racer.id).join(', ') }}
+                      </div>
+                    </div>
+                    <div v-else class="text-xs text-gray-400 opacity-70">
+                      応援者なし
+                    </div>
+                  </div>
                 </div>
                 
-                <!-- Racer info (left side) -->
-                <div class="absolute left-4 top-2 text-white font-bold text-lg z-10 drop-shadow-md">
-                  {{ racer.name }}
-                </div>
-                
-                <!-- Supporters (bottom left) -->
-                <div class="absolute left-4 bottom-2 text-xs text-gray-300 z-10 drop-shadow-md max-w-[50%] truncate">
-                  <span v-if="getRacerSupporters(racer.id).length > 0">
-                    🎯 {{ getRacerSupporters(racer.id).join(', ') }}
-                  </span>
-                  <span v-else class="opacity-50">誰もベットしていません</span>
-                </div>
-                
-                <!-- Finish line -->
-                <div class="absolute right-0 top-0 h-full w-4 bg-gradient-to-b from-white via-black to-white"></div>
+                <!-- Corner decorations -->
+                <div class="absolute top-0 left-0 w-6 h-6 bg-white/20"></div>
+                <div class="absolute bottom-0 right-0 w-6 h-6 bg-black/20"></div>
               </div>
             </div>
           </div>
