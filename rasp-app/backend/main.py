@@ -40,6 +40,7 @@ app.add_middleware(
 nfc_reader = None
 websocket_connections: List[WebSocket] = []
 nfc_listening = False
+nfc_mode = 'login'  # 'login' or 'register'
 last_card_id = None
 last_tap_time = 0
 CARD_COOLDOWN = 3
@@ -104,6 +105,48 @@ def grant_daily_bonus(card_id: str) -> dict:
         }
 
 
+def register_card(card_id: str) -> dict:
+    """
+    APIにカードを登録してトークンを取得
+    """
+    try:
+        response = requests.post(
+            f'{API_ENDPOINT}/api/auth/register-card',
+            json={'nfcCardId': card_id},
+            headers={
+                'Content-Type': 'application/json',
+                'X-API-Key': API_KEY,
+                'User-Agent': 'Mozilla/5.0'
+            },
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"✓ カード登録成功")
+            print(f"  登録ID: {data['data']['registrationId']}")
+            return {'success': True, 'data': data['data']}
+        elif response.status_code == 409:
+            return {
+                'success': False,
+                'error': 'このカードは既に登録されています',
+                'code': 'ALREADY_REGISTERED'
+            }
+        else:
+            return {
+                'success': False,
+                'error': f'サーバーエラー (HTTP {response.status_code})',
+                'code': 'SERVER_ERROR'
+            }
+            
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'通信エラー: {str(e)}',
+            'code': 'UNKNOWN_ERROR'
+        }
+
+
 async def broadcast_to_clients(message: dict):
     """全接続クライアントにメッセージを送信"""
     disconnected = []
@@ -121,7 +164,7 @@ async def broadcast_to_clients(message: dict):
 
 def on_nfc_connect(tag):
     """NFCカードがタッチされた時の処理"""
-    global last_card_id, last_tap_time
+    global last_card_id, last_tap_time, nfc_mode
     
     current_time = time.time()
     card_id = tag.identifier.hex()
@@ -136,28 +179,47 @@ def on_nfc_connect(tag):
     last_card_id = card_id
     last_tap_time = current_time
     
-    print(f"\n[{datetime.now().strftime('%H:%M:%S')}] カード検出: {card_id}")
+    print(f"\n[{datetime.now().strftime('%H:%M:%S')}] カード検出: {card_id} (モード: {nfc_mode})")
     
     # WebSocketで検出を通知
     asyncio.run(broadcast_to_clients({
         'type': 'card_detected',
         'cardId': card_id,
-        'timestamp': datetime.now().isoformat()
+        'timestamp': datetime.now().isoformat(),
+        'mode': nfc_mode
     }))
     
-    # ログインボーナスを付与
-    result = grant_daily_bonus(card_id)
+    if nfc_mode == 'login':
+        # ログインボーナスを付与
+        result = grant_daily_bonus(card_id)
+        
+        # 結果を送信
+        asyncio.run(broadcast_to_clients({
+            'type': 'login_result',
+            'success': result['success'],
+            'data': result.get('data'),
+            'error': result.get('error'),
+            'code': result.get('code')
+        }))
     
-    # 結果を送信
-    asyncio.run(broadcast_to_clients({
-        'type': 'login_result',
-        'success': result['success'],
-        'data': result.get('data'),
-        'error': result.get('error'),
-        'code': result.get('code')
-    }))
+    elif nfc_mode == 'register':
+        # カード登録
+        result = register_card(card_id)
+        
+        # 結果を送信
+        asyncio.run(broadcast_to_clients({
+            'type': 'register_result',
+            'success': result['success'],
+            'data': result.get('data'),
+            'error': result.get('error'),
+            'code': result.get('code')
+        }))
     
     # カードが離れるまで待機
+    while tag.is_present:
+        time.sleep(0.1)
+    
+    return True
     while tag.is_present:
         time.sleep(0.1)
     
@@ -279,6 +341,29 @@ async def stop_nfc_listening():
     global nfc_listening
     nfc_listening = False
     return {"status": "stopped"}
+
+
+@app.post("/api/set-nfc-mode")
+async def set_nfc_mode(mode: str):
+    """
+    NFCモードを設定
+    mode: 'login' または 'register'
+    """
+    global nfc_mode
+    
+    if mode not in ['login', 'register']:
+        raise HTTPException(status_code=400, detail="Invalid mode. Use 'login' or 'register'.")
+    
+    nfc_mode = mode
+    print(f"NFCモードを '{mode}' に変更しました")
+    
+    # 全クライアントに通知
+    await broadcast_to_clients({
+        'type': 'mode_changed',
+        'mode': mode
+    })
+    
+    return {"status": "ok", "mode": mode}
 
 
 if __name__ == "__main__":

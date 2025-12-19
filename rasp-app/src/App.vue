@@ -33,7 +33,12 @@ const raceState = ref({
 
 // Register state
 const registerState = ref({
-  show: false
+  show: false,
+  step: 'waiting', // 'waiting' | 'qr' | 'complete' | 'error'
+  qrUrl: null,
+  registrationId: null,
+  expiresIn: null,
+  error: null
 })
 
 // Audio refs
@@ -100,8 +105,17 @@ const triggerAction = (actionName) => {
     // Start race
     startRace()
   } else if (actionName === 'Register') {
-    // Open register screen
-    registerState.value.show = true
+    // Open register screen and set mode to register
+    registerState.value = {
+      show: true,
+      step: 'waiting',
+      qrUrl: null,
+      registrationId: null,
+      expiresIn: null,
+      error: null
+    }
+    // NFCモードを登録に変更
+    setNFCMode('register')
   } else {
     modal.value = { show: true, title: actionName.toUpperCase() }
     setTimeout(() => { if(modal.value.show) closeModal() }, 1500)
@@ -125,10 +139,13 @@ const connectWebSocket = () => {
     
     if (data.type === 'card_detected') {
       // NFCカード検出
-      console.log('NFCカード検出:', data.cardId)
+      console.log('NFCカード検出:', data.cardId, 'モード:', data.mode)
     } else if (data.type === 'login_result') {
       // ログイン結果受信
       handleLoginResult(data)
+    } else if (data.type === 'register_result') {
+      // 登録結果受信
+      handleRegisterResult(data)
     }
   }
   
@@ -148,6 +165,19 @@ const connectWebSocket = () => {
         connectWebSocket()
       }
     }, 5000)
+  }
+}
+
+const setNFCMode = async (mode) => {
+  try {
+    const response = await fetch('http://localhost:8000/api/set-nfc-mode?mode=' + mode, {
+      method: 'POST'
+    })
+    if (response.ok) {
+      console.log(`NFCモードを ${mode} に設定しました`)
+    }
+  } catch (error) {
+    console.error('NFCモード設定エラー:', error)
   }
 }
 
@@ -181,6 +211,35 @@ const handleLoginResult = (data) => {
       setTimeout(() => {
         if (loginState.value.show) {
           closeLoginModal()
+        }
+      }, 3000)
+    }
+  }
+}
+
+const handleRegisterResult = (data) => {
+  if (registerState.value.show && registerState.value.step === 'waiting') {
+    if (data.success) {
+      // 登録成功 → QRコード表示
+      const regData = data.data
+      registerState.value.step = 'qr'
+      registerState.value.qrUrl = regData.linkUrl
+      registerState.value.registrationId = regData.registrationId
+      registerState.value.expiresIn = regData.expiresIn
+    } else {
+      // エラー
+      registerState.value.step = 'error'
+      registerState.value.error = data.error || '不明なエラー'
+      
+      // 3秒後に閉じる
+      setTimeout(() => {
+        if (registerState.value.show) {
+          closeRegister()
+        }
+      }, 3000)
+    }
+  }
+}
         }
       }, 3000)
     }
@@ -302,7 +361,16 @@ const closeRace = () => {
 }
 
 const closeRegister = () => {
-  registerState.value.show = false
+  registerState.value = {
+    show: false,
+    step: 'waiting',
+    qrUrl: null,
+    registrationId: null,
+    expiresIn: null,
+    error: null
+  }
+  // NFCモードをloginに戻す
+  setNFCMode('login')
 }
 
 const selectBet = (bet) => {
@@ -328,6 +396,8 @@ const closeLoginModal = () => {
     nfcWaiting: false,
     loginResult: null
   }
+  // NFCモードをloginに戻す
+  setNFCMode('login')
 }
 
 const closeModal = () => modal.value.show = false
@@ -923,8 +993,9 @@ onUnmounted(() => {
 
     <!-- Register Screen -->
     <div v-if="registerState.show" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center">
-      <div class="text-center">
-        <!-- Main instruction -->
+      
+      <!-- Waiting for NFC -->
+      <div v-if="registerState.step === 'waiting'" class="text-center">
         <div class="mb-12">
           <div class="relative inline-block">
             <!-- Glow effect -->
@@ -959,6 +1030,13 @@ onUnmounted(() => {
               <div class="w-20 h-20 border-4 border-blue-300 rounded-full animate-ping"></div>
             </div>
           </div>
+          
+          <!-- WebSocket status -->
+          <div class="mt-4 text-xs">
+            <span :class="wsConnected ? 'text-blue-500' : 'text-red-500'">
+              {{ wsConnected ? '● 接続中' : '● 切断' }}
+            </span>
+          </div>
         </div>
         
         <!-- Back button -->
@@ -973,6 +1051,81 @@ onUnmounted(() => {
           </div>
         </button>
       </div>
+      
+      <!-- QR Code Display -->
+      <div v-if="registerState.step === 'qr'" class="text-center max-w-2xl">
+        <div class="mb-8">
+          <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-12 py-4 transform -skew-x-12 inline-block shadow-[0_0_50px_rgba(59,130,246,0.5)]">
+            <h2 class="text-4xl font-black text-white italic transform skew-x-12 tracking-wider">
+              📱 QRコードをスキャン 📱
+            </h2>
+          </div>
+        </div>
+        
+        <!-- QR Code -->
+        <div class="bg-white p-8 rounded-lg inline-block mb-8 shadow-[0_0_50px_rgba(255,255,255,0.3)]">
+          <img 
+            :src="'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(registerState.qrUrl)" 
+            alt="QR Code"
+            class="w-80 h-80"
+          >
+        </div>
+        
+        <!-- Instructions -->
+        <div class="space-y-4 mb-8">
+          <div class="text-xl text-white font-bold">
+            スマートフォンでQRコードをスキャンして
+          </div>
+          <div class="text-lg text-gray-400">
+            アカウントと連携してください
+          </div>
+          
+          <!-- Link URL (fallback) -->
+          <div class="mt-4 p-4 bg-gray-900 border border-gray-700 rounded">
+            <div class="text-xs text-gray-500 mb-2">または、このURLにアクセス:</div>
+            <a :href="registerState.qrUrl" target="_blank" class="text-sm text-blue-400 hover:text-blue-300 break-all">
+              {{ registerState.qrUrl }}
+            </a>
+          </div>
+          
+          <!-- Expiration info -->
+          <div class="text-sm text-yellow-400">
+            ⏰ {{ Math.floor(registerState.expiresIn / 60) }}分以内に連携を完了してください
+          </div>
+        </div>
+        
+        <!-- Back button -->
+        <button 
+          @click="closeRegister"
+          class="group relative focus:outline-none"
+        >
+          <div class="bg-gray-700 border-4 border-gray-500 px-12 py-4 transform -skew-x-12 shadow-[6px_6px_0px_rgba(0,0,0,0.5)] group-hover:bg-gray-600 group-hover:-translate-y-1 transition-all">
+            <span class="text-2xl font-black italic text-white transform skew-x-12 inline-block tracking-wider">
+              ← 戻る
+            </span>
+          </div>
+        </button>
+      </div>
+      
+      <!-- Error -->
+      <div v-if="registerState.step === 'error'" class="text-center">
+        <div class="text-9xl mb-6">❌</div>
+        
+        <div class="bg-red-600 px-12 py-4 transform -skew-x-12 inline-block shadow-[0_0_50px_rgba(239,68,68,0.5)] mb-4">
+          <h2 class="text-4xl font-black text-white italic transform skew-x-12 tracking-wider">
+            エラー
+          </h2>
+        </div>
+        
+        <div class="mt-6 text-xl text-red-400">
+          {{ registerState.error }}
+        </div>
+        
+        <div class="mt-6 text-gray-500 text-sm">
+          画面が自動的に閉じます...
+        </div>
+      </div>
+      
     </div>
 
   </div>
