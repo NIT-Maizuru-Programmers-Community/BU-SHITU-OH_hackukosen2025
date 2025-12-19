@@ -756,7 +756,7 @@ def award_points_for_race(characters: List[Dict], bets: List[Dict], race_id: str
                 result = award_points_to_user(
                     user_id=user_id,
                     amount=points,
-                    bet_type="race_bet",
+                    bet_type="race_prediction_bonus",
                     description=description,
                     related_id=race_id
                 )
