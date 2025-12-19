@@ -1032,6 +1032,104 @@ async def get_today_attendance_count():
         }
 
 
+# レース実行用（bushituoh.pyを使用）
+import sys
+import os
+
+# bushituoh.pyがあるディレクトリをパスに追加
+PYTHON_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'Python')
+if PYTHON_DIR not in sys.path:
+    sys.path.insert(0, PYTHON_DIR)
+
+# キャラクターマッピング（勝者番号 → キャラクター情報）
+WINNER_MAPPING = {
+    1: {'characterId': 'c', 'name': 'C言語', 'emoji': '🇨'},
+    2: {'characterId': 'python', 'name': 'Python', 'emoji': '🐍'},
+    3: {'characterId': 'javascript', 'name': 'JavaScript', 'emoji': '🟨'}
+}
+
+
+@app.post("/api/race/run")
+async def run_race():
+    """
+    実際のレースを実行（モーター制御）
+    bushituoh.match()を呼び出して勝者を決定
+    """
+    try:
+        print("\n" + "="*60)
+        print("=== レース実行開始 ===")
+        print("="*60)
+        
+        try:
+            # bushituohモジュールをインポート
+            import bushituoh
+            
+            print("bushituoh.match() を呼び出し中...")
+            print("（モーターが動作します）")
+            
+            # レースを実行（モーター制御）
+            winner = bushituoh.match(debugmode=True)
+            
+            print(f"\n勝者番号: {winner}")
+            
+        except ImportError as e:
+            print(f"⚠ bushituohモジュールが見つかりません: {e}")
+            print("ダミーモードで実行します（ランダム勝者）")
+            import random
+            winner = random.randint(1, 3)
+            
+        except Exception as e:
+            print(f"⚠ モーター制御エラー: {e}")
+            print("ダミーモードで実行します（ランダム勝者）")
+            import random
+            winner = random.randint(1, 3)
+        
+        # 勝者以外の順位をランダムに決定
+        all_positions = [1, 2, 3]
+        all_positions.remove(winner)
+        import random
+        random.shuffle(all_positions)
+        
+        # 結果を構築
+        results = []
+        winner_info = WINNER_MAPPING[winner].copy()
+        winner_info['rank'] = 1
+        results.append(winner_info)
+        
+        second = all_positions[0]
+        second_info = WINNER_MAPPING[second].copy()
+        second_info['rank'] = 2
+        results.append(second_info)
+        
+        third = all_positions[1]
+        third_info = WINNER_MAPPING[third].copy()
+        third_info['rank'] = 3
+        results.append(third_info)
+        
+        print(f"\n=== レース結果 ===")
+        for r in results:
+            print(f"  {r['rank']}位: {r['name']} {r['emoji']}")
+        print("="*60 + "\n")
+        
+        return {
+            'success': True,
+            'winner': winner,
+            'winnerName': WINNER_MAPPING[winner]['name'],
+            'winnerEmoji': WINNER_MAPPING[winner]['emoji'],
+            'results': results
+        }
+        
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"\n✗ レース実行エラー:")
+        print(error_trace)
+        raise HTTPException(
+            status_code=500,
+            detail=f"レース実行エラー: {str(e)}"
+        )
+
+
 @app.post("/api/races/result")
 async def submit_race(race_data: RaceResultData):
     """レース結果をFirebaseに送信"""

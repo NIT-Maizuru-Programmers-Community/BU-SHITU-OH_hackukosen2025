@@ -434,7 +434,7 @@ const startRace = () => {
   }, 1000)
 }
 
-const beginRacing = () => {
+const beginRacing = async () => {
   // Clear countdown timer
   if (countdownTimer) {
     clearInterval(countdownTimer)
@@ -453,7 +453,63 @@ const beginRacing = () => {
   musicAudio.loop = true
   musicAudio.play().catch(e => console.log('Audio play failed:', e))
   
-  // Race duration (8 seconds)
+  // バックエンドにレース実行をリクエスト（モーター制御）
+  console.log('Requesting race execution from backend...')
+  
+  try {
+    // レース実行API呼び出し
+    const response = await fetch(`${BACKEND_URL}/api/race/run`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const raceResult = await response.json()
+    console.log('Race result from backend:', raceResult)
+    
+    // 結果に基づいてプログレスバーをアニメーション
+    if (raceResult.success && raceResult.results) {
+      // 結果に応じてプログレスを設定
+      const rankToProgress = { 1: 100, 2: 85, 3: 70 }
+      
+      raceResult.results.forEach(result => {
+        const racer = racers.find(r => r.name === result.name)
+        if (racer) {
+          racer.progress = rankToProgress[result.rank] || 50
+        }
+      })
+      
+      // 結果を設定
+      raceState.value.results = raceResult.results.map((result, index) => ({
+        ...result,
+        icon: result.emoji,
+        points: pointsByRank[index] || 0
+      }))
+      
+      // 少し待ってから結果画面へ
+      setTimeout(() => {
+        finishRace(raceState.value.results)
+      }, 1000)
+    } else {
+      throw new Error('Invalid race result from backend')
+    }
+    
+  } catch (error) {
+    console.error('Race execution failed:', error)
+    
+    // フォールバック：ローカルでランダムレース
+    console.log('Falling back to local random race...')
+    runLocalRace()
+  }
+}
+
+// フォールバック用のローカルレース
+const runLocalRace = () => {
   const raceDuration = 8000
   const updateInterval = 50
   let elapsed = 0
@@ -471,26 +527,38 @@ const beginRacing = () => {
     // Check if race is over
     if (elapsed >= raceDuration) {
       clearInterval(raceTimer)
-      finishRace()
+      
+      // Calculate final results (sort by progress)
+      const sortedRacers = [...racers].sort((a, b) => b.progress - a.progress)
+      const results = sortedRacers.map((racer, index) => ({
+        ...racer,
+        rank: index + 1,
+        points: pointsByRank[index] || 0
+      }))
+      
+      finishRace(results)
     }
   }, updateInterval)
 }
 
-const finishRace = () => {
+const finishRace = (results) => {
   // Stop music
   if (musicAudio) {
     musicAudio.pause()
     musicAudio = null
   }
   
-  // Calculate final results (sort by progress)
-  const sortedRacers = [...racers].sort((a, b) => b.progress - a.progress)
-  raceState.value.results = sortedRacers.map((racer, index) => ({
-    ...racer,
-    rank: index + 1,
-    points: pointsByRank[index] || 0
-  }))
+  // 結果が引数で渡されていない場合はローカルで計算
+  if (!results) {
+    const sortedRacers = [...racers].sort((a, b) => b.progress - a.progress)
+    results = sortedRacers.map((racer, index) => ({
+      ...racer,
+      rank: index + 1,
+      points: pointsByRank[index] || 0
+    }))
+  }
   
+  raceState.value.results = results
   raceState.value.phase = 'result'
   
   // レース結果をFirebaseに送信
