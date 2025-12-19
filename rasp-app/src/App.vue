@@ -154,11 +154,10 @@ const connectWebSocket = () => {
 const handleLoginResult = (data) => {
   if (loginState.value.show && loginState.value.step === 'waiting') {
     if (data.success) {
-      // ログイン成功
+      // ログイン成功 → ベット選択画面へ
       const user = data.data?.user || {}
       const bonus = data.data?.bonus || {}
       
-      loginState.value.step = 'result'
       loginState.value.loginResult = {
         success: true,
         userName: user.displayName || 'ゲスト',
@@ -167,12 +166,8 @@ const handleLoginResult = (data) => {
         message: bonus.awarded ? 'ログインボーナス獲得！' : 'ログイン済み'
       }
       
-      // 3秒後に閉じる
-      setTimeout(() => {
-        if (loginState.value.show) {
-          closeLoginModal()
-        }
-      }, 3000)
+      // ベット選択画面に遷移
+      loginState.value.step = 'select'
     } else {
       // エラー
       loginState.value.step = 'result'
@@ -315,10 +310,14 @@ const selectBet = (bet) => {
   loginState.value.step = 'complete'
   console.log(`Selected bet: ${bet.name}`)
   
-  // Auto close after 2 seconds
+  // 結果表示に遷移してから2秒後に閉じる
   setTimeout(() => {
-    closeLoginModal()
-  }, 2000)
+    loginState.value.step = 'final_result'
+    
+    setTimeout(() => {
+      closeLoginModal()
+    }, 2000)
+  }, 500)
 }
 
 const closeLoginModal = () => {
@@ -719,8 +718,8 @@ onUnmounted(() => {
         </button>
       </div>
       
-      <!-- Step 2: Login Complete -->
-      <div v-if="loginState.step === 'complete'" class="text-center animate-pulse">
+      <!-- Bet Selection Complete (選択直後のアニメーション) -->
+      <div v-if="loginState.step === 'complete'" class="text-center">
         <div class="relative">
           <!-- Glow effect -->
           <div class="absolute inset-0 blur-3xl bg-green-500/30 rounded-full scale-150"></div>
@@ -732,15 +731,54 @@ onUnmounted(() => {
               {{ loginState.selectedBet?.icon }}
             </div>
             
+            <!-- Selection message -->
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 px-12 py-4 transform -skew-x-12 inline-block shadow-[0_0_50px_rgba(147,51,234,0.5)]">
+              <h2 class="text-3xl font-black text-white italic transform skew-x-12 tracking-wider">
+                {{ loginState.selectedBet?.name }} を選択！
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Final Result (ログイン完了) -->
+      <div v-if="loginState.step === 'final_result'" class="text-center">
+        <div class="relative">
+          <!-- Glow effect -->
+          <div class="absolute inset-0 blur-3xl bg-green-500/30 rounded-full scale-150"></div>
+          
+          <!-- Content -->
+          <div class="relative">
+            <!-- Success icon with selected bet -->
+            <div class="flex items-center justify-center gap-4 mb-6">
+              <div class="text-9xl animate-pulse">
+                ⭐
+              </div>
+              <div class="text-7xl animate-bounce">
+                {{ loginState.selectedBet?.icon }}
+              </div>
+            </div>
+            
             <!-- Success message -->
-            <div class="bg-green-600 px-12 py-4 transform -skew-x-12 inline-block shadow-[0_0_50px_rgba(0,255,0,0.5)]">
+            <div class="bg-green-600 px-12 py-4 transform -skew-x-12 inline-block shadow-[0_0_50px_rgba(0,255,0,0.5)] mb-4">
               <h2 class="text-4xl font-black text-white italic transform skew-x-12 tracking-wider">
                 ログイン完了！
               </h2>
             </div>
             
-            <div class="mt-4 text-green-400 font-bold text-xl">
-              {{ loginState.selectedBet?.name }} で勝負！
+            <div class="mt-6 space-y-2">
+              <div class="text-2xl font-bold text-white">
+                {{ loginState.loginResult?.userName }} さん
+              </div>
+              <div class="text-xl text-purple-400 font-bold">
+                {{ loginState.selectedBet?.name }} で勝負！
+              </div>
+              <div class="text-3xl font-black text-green-400 font-['Russo_One']">
+                +{{ loginState.loginResult?.points }} pts
+              </div>
+              <div class="text-gray-400">
+                総ポイント: {{ loginState.loginResult?.totalPoints }} pts
+              </div>
             </div>
             
             <div class="mt-6 text-gray-500 text-sm">
