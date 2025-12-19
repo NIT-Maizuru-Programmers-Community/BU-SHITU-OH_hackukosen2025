@@ -104,7 +104,16 @@ const fetchCurrentBets = async () => {
     const result = await response.json()
     currentBets.value = result.bets || []
     
-    console.log('Current bets fetched:', currentBets.value)
+    console.log('=== BETS DEBUG INFO ===')
+    console.log('Raw API response:', result)
+    console.log('currentBets.value:', currentBets.value)
+    console.log('Type of currentBets.value:', typeof currentBets.value)
+    console.log('Is array:', Array.isArray(currentBets.value))
+    if (currentBets.value.length > 0) {
+      console.log('First bet example:', currentBets.value[0])
+      console.log('Fields in first bet:', Object.keys(currentBets.value[0]))
+    }
+    console.log('=====================')
   } catch (error) {
     console.error('Failed to fetch current bets:', error)
     betsError.value = error.message
@@ -275,13 +284,32 @@ const submitRaceResult = async (results) => {
 
 // 各駒にベットしたユーザーを取得するヘルパー関数
 const getRacerSupporters = (racerId) => {
-  console.log('Getting supporters for racer:', racerId)
+  console.log('=== GET RACER SUPPORTERS DEBUG ===')
+  console.log('Requested racer ID:', racerId, 'Type:', typeof racerId)
   console.log('Current bets:', currentBets.value)
+  console.log('Current bets length:', currentBets.value?.length)
+  
+  if (!currentBets.value || currentBets.value.length === 0) {
+    console.log('No bets available')
+    return []
+  }
+  
+  // 各ベットをチェック
+  currentBets.value.forEach((bet, index) => {
+    console.log(`Bet ${index}:`, bet)
+    console.log(`  selectedBet: "${bet.selectedBet}" (type: ${typeof bet.selectedBet})`)
+    console.log(`  displayName: "${bet.displayName}"`)
+    console.log(`  Matches racer ${racerId}?`, bet.selectedBet === racerId.toString())
+  })
   
   const racerBets = currentBets.value.filter(bet => bet.selectedBet === racerId.toString())
   console.log('Filtered bets for racer', racerId, ':', racerBets)
   
-  return racerBets.map(bet => bet.displayName)
+  const supporters = racerBets.map(bet => bet.displayName)
+  console.log('Final supporters:', supporters)
+  console.log('=================================')
+  
+  return supporters
 }
 
 // 定期的にランキングと人数を更新（60秒ごと）
@@ -1253,9 +1281,16 @@ onUnmounted(() => {
                       <div class="text-xs mt-1 max-h-16 overflow-y-auto">
                         {{ getRacerSupporters(racer.id).join(', ') }}
                       </div>
+                      <div class="text-xs text-gray-400 mt-1">
+                        ({{ getRacerSupporters(racer.id).length }}名)
+                      </div>
                     </div>
                     <div v-else class="text-xs text-gray-400 opacity-70">
                       応援者なし
+                    </div>
+                    <!-- Debug info -->
+                    <div class="text-xs text-red-400 mt-1">
+                      Debug: ID={{ racer.id }}, Supporters={{ JSON.stringify(getRacerSupporters(racer.id)) }}
                     </div>
                   </div>
                 </div>
