@@ -275,8 +275,13 @@ const submitRaceResult = async (results) => {
 
 // 各駒にベットしたユーザーを取得するヘルパー関数
 const getRacerSupporters = (racerId) => {
-  const racerBets = currentBets.value.filter(bet => bet.bet === racerId)
-  return racerBets.map(bet => bet.username)
+  console.log('Getting supporters for racer:', racerId)
+  console.log('Current bets:', currentBets.value)
+  
+  const racerBets = currentBets.value.filter(bet => bet.selectedBet === racerId.toString())
+  console.log('Filtered bets for racer', racerId, ':', racerBets)
+  
+  return racerBets.map(bet => bet.displayName)
 }
 
 // 定期的にランキングと人数を更新（60秒ごと）
@@ -444,7 +449,7 @@ const handleRegisterResult = (data) => {
 }
 
 // Race functions
-const startRace = () => {
+const startRace = async () => {
   // Reset race state
   raceState.value = {
     show: true,
@@ -458,7 +463,9 @@ const startRace = () => {
   racers.forEach(r => r.progress = 0)
   
   // Fetch current bets to display who bet on whom
-  fetchCurrentBets()
+  console.log('Fetching current bets for race display...')
+  await fetchCurrentBets()
+  console.log('Bets fetched, currentBets.value:', currentBets.value)
   
   // Play timer sound
   timerAudio = new Audio(timerSound)
