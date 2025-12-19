@@ -122,10 +122,10 @@ const fetchRanking = async (limit = 10) => {
 }
 
 const eventData = ref([
-  { date: '12/24', title: 'Xmas Party', bonus: 'x2.0' },
-  { date: '12/31', title: '年越し部室', bonus: 'x3.0' },
-  { date: '01/01', title: '初日の出', bonus: 'x5.0' },
-  { date: '01/10', title: '新歓準備', bonus: 'x1.5' },
+  { date: '01/15', title: 'LT会', bonus: 'x2.0' },
+  { date: '01/20', title: '全体MTG', bonus: 'x1.5' },
+  { date: '02/01', title: '部内ハッカソン', bonus: 'x3.0' },
+  { date: '02/15', title: '低学年PJお披露目会', bonus: 'x2.5' },
 ])
 
 const updateTime = () => {
@@ -744,6 +744,25 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
+        
+        <!-- EVENT SCHEDULE (ランキングの下) -->
+        <div class="mt-4 flex flex-col transform -skew-x-6">
+          <!-- Event Header -->
+          <div class="bg-gradient-to-r from-purple-900 to-black border border-purple-500 px-3 py-2 mb-2">
+            <h3 class="text-sm font-black text-purple-300 tracking-widest text-center transform skew-x-6">EVENT SCHEDULE</h3>
+          </div>
+          
+          <!-- Event List -->
+          <div class="bg-black/50 border border-gray-700 p-3 space-y-2">
+            <div v-for="(event, i) in eventData" :key="i" class="flex items-center justify-between text-sm border-b border-gray-800 pb-2 last:border-0 transform skew-x-6">
+              <div>
+                <span class="text-green-400 font-bold mr-2">{{ event.date }}</span>
+                <span class="text-gray-200">{{ event.title }}</span>
+              </div>
+              <span class="bg-red-600 text-white px-2 py-0.5 font-bold text-xs rounded">{{ event.bonus }}</span>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
 
@@ -790,25 +809,6 @@ onUnmounted(() => {
             <span class="text-xl font-bold">設定</span>
           </div>
         </button>
-      </div>
-
-      <!-- EVENTS (Right End, Fixed Width) -->
-      <div class="w-80 shrink-0 flex flex-col h-full transform -skew-x-6 ml-2">
-        <!-- Event Header -->
-        <div class="bg-gradient-to-r from-purple-900 to-black border border-purple-500 px-3 py-2 mb-2">
-          <h3 class="text-sm font-black text-purple-300 tracking-widest text-center">EVENT SCHEDULE</h3>
-        </div>
-        
-        <!-- Event List -->
-        <div class="flex-1 bg-black/50 border border-gray-700 p-3 overflow-y-auto no-scrollbar space-y-3">
-          <div v-for="(event, i) in eventData" :key="i" class="flex items-center justify-between text-sm border-b border-gray-800 pb-2 last:border-0">
-            <div>
-              <span class="text-green-400 font-bold mr-2">{{ event.date }}</span>
-              <span class="text-gray-200">{{ event.title }}</span>
-            </div>
-            <span class="bg-red-600 text-white px-2 py-0.5 font-bold text-xs rounded">{{ event.bonus }}</span>
-          </div>
-        </div>
       </div>
 
     </section>
