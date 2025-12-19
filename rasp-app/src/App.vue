@@ -53,7 +53,7 @@ const racers = [
 ]
 
 // Points by ranking
-const pointsByRank = [1000, 500, 100]
+const pointsByRank = [100, 50, 10]
 
 // Bet options
 const betOptions = [
@@ -617,12 +617,12 @@ onUnmounted(() => {
     <div class="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-green-900/10 to-transparent transform skew-x-12 z-0 pointer-events-none"></div>
 
     <!-- UPPER SECTION: Header / Top Bar -->
-    <header class="relative z-10 w-full h-32 px-8 flex justify-between items-center border-b-4 border-green-600 bg-black/80 backdrop-blur-sm shrink-0">
-      <div class="flex items-center gap-6">
+    <header class="relative z-10 w-full h-40 px-10 flex justify-between items-center border-b-4 border-green-600 bg-black/80 backdrop-blur-sm shrink-0">
+      <div class="flex items-center gap-8">
         <!-- Logo (画像を使用する場合は、public/logo.pngに配置してsrc="/logo.png"に変更) -->
         <img src="./logo.png" 
              alt="部室王ロゴ" 
-             class="h-24 object-contain transform -skew-x-6 drop-shadow-[0_0_10px_rgba(0,255,0,0.5)]"
+             class="h-32 object-contain transform -skew-x-6 drop-shadow-[0_0_10px_rgba(0,255,0,0.5)]"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
         
         <!-- Title Text -->
@@ -631,13 +631,13 @@ onUnmounted(() => {
         </h1>-->
 
         <!-- Current King Display -->
-        <div class="hidden lg:flex items-center gap-6 ml-8">
+        <div class="hidden lg:flex items-center gap-8 ml-10">
           <div class="flex flex-col transform -skew-x-12">
-            <div class="bg-gradient-to-r from-yellow-900/80 to-black border-2 border-yellow-500 px-8 py-2 shadow-[0_0_15px_rgba(234,179,8,0.4)] flex items-center gap-4">
-              <span class="text-4xl animate-pulse">👑</span>
+            <div class="bg-gradient-to-r from-yellow-900/80 to-black border-3 border-yellow-500 px-10 py-3 shadow-[0_0_20px_rgba(234,179,8,0.4)] flex items-center gap-5">
+              <span class="text-5xl animate-pulse">👑</span>
               <div>
-                <span class="text-sm text-yellow-400 font-bold block leading-none mb-1 tracking-wider">現在の部室王</span>
-                <span class="text-2xl font-black text-white leading-none italic tracking-wider shadow-black drop-shadow-md">
+                <span class="text-base text-yellow-400 font-bold block leading-none mb-2 tracking-wider">現在の部室王</span>
+                <span class="text-3xl font-black text-white leading-none italic tracking-wider shadow-black drop-shadow-md">
                   {{ rankingData.length > 0 && rankingData[0].rank === 1 ? rankingData[0].name : '---' }}
                 </span>
               </div>
@@ -646,12 +646,12 @@ onUnmounted(() => {
           
           <!-- Attendance Count -->
           <div class="flex flex-col transform -skew-x-12">
-            <div class="bg-gradient-to-r from-green-900/80 to-black border-2 border-green-500 px-8 py-2 shadow-[0_0_15px_rgba(0,255,0,0.4)] flex items-center gap-4">
-              <span class="text-4xl">👥</span>
+            <div class="bg-gradient-to-r from-green-900/80 to-black border-3 border-green-500 px-10 py-3 shadow-[0_0_20px_rgba(0,255,0,0.4)] flex items-center gap-5">
+              <span class="text-5xl">👥</span>
               <div>
-                <span class="text-sm text-green-400 font-bold block leading-none mb-1 tracking-wider">今日来た人数</span>
-                <span class="text-2xl font-black text-white leading-none italic tracking-wider shadow-black drop-shadow-md">
-                  {{ attendanceCount }} <span class="text-lg text-gray-400">人</span>
+                <span class="text-base text-green-400 font-bold block leading-none mb-2 tracking-wider">今日来た人数</span>
+                <span class="text-3xl font-black text-white leading-none italic tracking-wider shadow-black drop-shadow-md">
+                  {{ attendanceCount }} <span class="text-xl text-gray-400">人</span>
                 </span>
               </div>
             </div>
@@ -661,27 +661,27 @@ onUnmounted(() => {
       
       <!-- Live Clock -->
       <div class="flex flex-col items-end transform -skew-x-6">
-        <div class="text-5xl font-['Russo_One'] text-green-400 leading-none drop-shadow-[0_0_5px_rgba(0,255,0,0.8)]">{{ currentTime }}</div>
-        <div class="text-lg font-bold text-gray-400 tracking-widest">{{ currentDate }}</div>
+        <div class="text-6xl font-['Russo_One'] text-green-400 leading-none drop-shadow-[0_0_5px_rgba(0,255,0,0.8)]">{{ currentTime }}</div>
+        <div class="text-xl font-bold text-gray-400 tracking-widest">{{ currentDate }}</div>
       </div>
     </header>
 
     <!-- MIDDLE SECTION: Art Panel & Ranking -->
-    <main class="relative z-10 flex-1 flex gap-8 p-8 pb-4 min-h-0">
+    <main class="relative z-10 flex-1 flex gap-10 p-10 pb-6 min-h-0">
       
       <!-- LEFT: Art Panel -->
       <section class="flex-[3] relative flex flex-col min-h-0">
         <div class="w-full h-full border-4 border-white bg-gray-900 relative shadow-[0_0_20px_rgba(0,255,0,0.1)] overflow-hidden group">
           <!-- Corner Deco -->
-          <div class="absolute top-0 left-0 w-12 h-12 bg-green-600 z-20 clip-path-triangle"></div>
-          <div class="absolute bottom-0 right-0 w-12 h-12 bg-green-600 z-20 clip-path-triangle-br"></div>
+          <div class="absolute top-0 left-0 w-16 h-16 bg-green-600 z-20 clip-path-triangle"></div>
+          <div class="absolute bottom-0 right-0 w-16 h-16 bg-green-600 z-20 clip-path-triangle-br"></div>
           
           <!-- Content Area -->
           <div class="w-full h-full flex items-center justify-center relative">
             <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#00ff00 1px, transparent 1px); background-size: 20px 20px;"></div>
             <div class="text-center z-10">
-              <div class="text-5xl mb-4 text-white/50">🖼️</div>
-              <h2 class="text-xl font-bold text-green-500 bg-black px-4 py-1 transform -skew-x-12 border border-green-500">
+              <div class="text-7xl mb-6 text-white/50">🖼️</div>
+              <h2 class="text-2xl font-bold text-green-500 bg-black px-6 py-2 transform -skew-x-12 border border-green-500">
                 ART PANEL AREA
               </h2>
             </div>
@@ -690,30 +690,30 @@ onUnmounted(() => {
       </section>
 
       <!-- RIGHT: Ranking -->
-      <section class="flex-[1] min-w-[380px] flex flex-col">
+      <section class="flex-[1] min-w-[450px] flex flex-col">
         <!-- Header -->
-        <div class="bg-black border-2 border-green-500 px-6 py-2 mb-3 transform -skew-x-12 w-full shadow-[4px_4px_0px_rgba(0,255,0,0.3)]">
-          <h3 class="text-2xl font-black italic text-white text-center transform skew-x-12 tracking-wider">
+        <div class="bg-black border-3 border-green-500 px-8 py-3 mb-4 transform -skew-x-12 w-full shadow-[4px_4px_0px_rgba(0,255,0,0.3)]">
+          <h3 class="text-3xl font-black italic text-white text-center transform skew-x-12 tracking-wider">
             🏆 RANKING
           </h3>
         </div>
         
         <!-- List -->
-        <div class="flex-1 overflow-y-auto no-scrollbar space-y-3 pr-2">
+        <div class="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-3">
           <!-- Loading State -->
-          <div v-if="rankingLoading && rankingData.length === 0" class="text-center text-green-500 py-6">
-            <div class="animate-pulse text-lg">ランキング読み込み中...</div>
+          <div v-if="rankingLoading && rankingData.length === 0" class="text-center text-green-500 py-8">
+            <div class="animate-pulse text-xl">ランキング読み込み中...</div>
           </div>
           
           <!-- Error State -->
-          <div v-else-if="rankingError && rankingData.length === 0" class="text-center text-red-500 py-6">
-            <div class="text-lg">エラー: {{ rankingError }}</div>
-            <button @click="fetchRanking()" class="mt-2 text-base text-green-400 underline">再読み込み</button>
+          <div v-else-if="rankingError && rankingData.length === 0" class="text-center text-red-500 py-8">
+            <div class="text-xl">エラー: {{ rankingError }}</div>
+            <button @click="fetchRanking()" class="mt-3 text-lg text-green-400 underline">再読み込み</button>
           </div>
           
           <!-- Ranking List -->
           <div v-else v-for="(user, index) in rankingData" :key="user.rank || index" 
-               class="relative group h-16 transform -skew-x-12 transition-all duration-200 hover:scale-[1.02] hover:translate-x-1">
+               class="relative group h-20 transform -skew-x-12 transition-all duration-200 hover:scale-[1.02] hover:translate-x-1">
             
             <!-- Background -->
             <div :class="[
@@ -725,41 +725,41 @@ onUnmounted(() => {
             ]"></div>
             
             <!-- Content -->
-            <div class="absolute inset-0 flex items-center justify-between px-5 transform skew-x-12">
-              <div class="flex items-center gap-4">
+            <div class="absolute inset-0 flex items-center justify-between px-6 transform skew-x-12">
+              <div class="flex items-center gap-5">
                 <div :class="[
-                  'font-black text-2xl italic w-10 text-center',
-                  user.rank === 1 ? 'text-yellow-400 text-3xl' : 
+                  'font-black text-3xl italic w-12 text-center',
+                  user.rank === 1 ? 'text-yellow-400 text-4xl' : 
                   user.rank === 2 ? 'text-gray-300' : 
                   user.rank === 3 ? 'text-orange-400' : 'text-green-700'
                 ]">{{ user.rank }}</div>
-                <div class="font-bold text-lg truncate max-w-[150px] flex items-center gap-2">
+                <div class="font-bold text-xl truncate max-w-[180px] flex items-center gap-3">
                   {{ user.name }}
-                  <span v-if="user.isPresident" class="text-yellow-400 text-sm">👑</span>
+                  <span v-if="user.isPresident" class="text-yellow-400 text-base">👑</span>
                 </div>
               </div>
-              <div class="font-mono font-bold text-green-400 text-base">
-                {{ user.points.toLocaleString() }} <span class="text-xs text-gray-500">PTS</span>
+              <div class="font-mono font-bold text-green-400 text-lg">
+                {{ user.points.toLocaleString() }} <span class="text-sm text-gray-500">PTS</span>
               </div>
             </div>
           </div>
         </div>
         
         <!-- EVENT SCHEDULE (ランキングの下) -->
-        <div class="mt-4 flex flex-col transform -skew-x-6">
+        <div class="mt-6 flex flex-col transform -skew-x-6">
           <!-- Event Header -->
-          <div class="bg-gradient-to-r from-purple-900 to-black border border-purple-500 px-3 py-2 mb-2">
-            <h3 class="text-sm font-black text-purple-300 tracking-widest text-center transform skew-x-6">EVENT SCHEDULE</h3>
+          <div class="bg-gradient-to-r from-purple-900 to-black border border-purple-500 px-4 py-3 mb-3">
+            <h3 class="text-base font-black text-purple-300 tracking-widest text-center transform skew-x-6">EVENT SCHEDULE</h3>
           </div>
           
           <!-- Event List -->
-          <div class="bg-black/50 border border-gray-700 p-3 space-y-2">
-            <div v-for="(event, i) in eventData" :key="i" class="flex items-center justify-between text-sm border-b border-gray-800 pb-2 last:border-0 transform skew-x-6">
+          <div class="bg-black/50 border border-gray-700 p-4 space-y-3">
+            <div v-for="(event, i) in eventData" :key="i" class="flex items-center justify-between text-base border-b border-gray-800 pb-3 last:border-0 transform skew-x-6">
               <div>
-                <span class="text-green-400 font-bold mr-2">{{ event.date }}</span>
+                <span class="text-green-400 font-bold mr-3">{{ event.date }}</span>
                 <span class="text-gray-200">{{ event.title }}</span>
               </div>
-              <span class="bg-red-600 text-white px-2 py-0.5 font-bold text-xs rounded">{{ event.bonus }}</span>
+              <span class="bg-red-600 text-white px-3 py-1 font-bold text-sm rounded">{{ event.bonus }}</span>
             </div>
           </div>
         </div>
@@ -767,46 +767,46 @@ onUnmounted(() => {
     </main>
 
     <!-- LOWER SECTION: Buttons & Events -->
-    <section class="relative z-10 h-48 shrink-0 flex gap-6 px-8 pb-8">
+    <section class="relative z-10 h-56 shrink-0 flex gap-8 px-10 pb-10">
       
       <!-- BUTTONS GROUP (Left, Grows) -->
-      <div class="flex-[3] flex gap-4 h-full">
+      <div class="flex-[3] flex gap-6 h-full">
         
         <!-- 1. LOGIN -->
         <button @click="triggerAction('Login')" class="flex-[1.2] group relative focus:outline-none">
-          <div class="absolute inset-0 bg-green-600 border-4 border-white transform -skew-x-12 shadow-[6px_6px_0px_rgba(0,0,0,0.5)] group-hover:bg-green-500 group-hover:shadow-[8px_8px_0px_rgba(0,0,0,0.8)] group-hover:-translate-y-1 transition-all"></div>
+          <div class="absolute inset-0 bg-green-600 border-4 border-white transform -skew-x-12 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] group-hover:bg-green-500 group-hover:shadow-[10px_10px_0px_rgba(0,0,0,0.8)] group-hover:-translate-y-1 transition-all"></div>
           <div class="absolute inset-0 flex flex-col items-center justify-center transform -skew-x-12 group-hover:scale-105 transition-transform">
-            <span class="text-5xl mb-2 drop-shadow-md">⚡</span>
-            <span class="text-3xl font-black italic tracking-tighter text-black">LOGIN</span>
-            <span class="text-sm bg-black text-white px-3 py-1 font-bold">入室</span>
+            <span class="text-6xl mb-3 drop-shadow-md">⚡</span>
+            <span class="text-4xl font-black italic tracking-tighter text-black">LOGIN</span>
+            <span class="text-base bg-black text-white px-4 py-1.5 font-bold">入室</span>
           </div>
         </button>
 
         <!-- 2. TODAY'S RACE -->
         <button @click="triggerAction('Race')" class="flex-1 group relative focus:outline-none">
-          <div class="absolute inset-0 bg-black border-2 border-green-500 transform -skew-x-12 shadow-[4px_4px_0px_rgba(0,255,0,0.2)] group-hover:bg-green-900 group-hover:-translate-y-1 transition-all"></div>
+          <div class="absolute inset-0 bg-black border-3 border-green-500 transform -skew-x-12 shadow-[6px_6px_0px_rgba(0,255,0,0.2)] group-hover:bg-green-900 group-hover:-translate-y-1 transition-all"></div>
           <div class="absolute inset-0 flex flex-col items-center justify-center transform -skew-x-12">
-            <span class="text-4xl mb-2 group-hover:rotate-12 transition-transform">🏁</span>
-            <span class="text-2xl font-black italic text-white">RACE</span>
-            <span class="text-sm text-green-400 font-bold">今日のレース</span>
+            <span class="text-5xl mb-3 group-hover:rotate-12 transition-transform">🏁</span>
+            <span class="text-3xl font-black italic text-white">RACE</span>
+            <span class="text-base text-green-400 font-bold">今日のレース</span>
           </div>
         </button>
 
         <!-- 3. REGISTER -->
         <button @click="triggerAction('Register')" class="flex-1 group relative focus:outline-none">
-          <div class="absolute inset-0 bg-gray-800 border-2 border-gray-500 transform -skew-x-12 group-hover:bg-white group-hover:border-white group-hover:-translate-y-1 transition-all"></div>
+          <div class="absolute inset-0 bg-gray-800 border-3 border-gray-500 transform -skew-x-12 group-hover:bg-white group-hover:border-white group-hover:-translate-y-1 transition-all"></div>
           <div class="absolute inset-0 flex flex-col items-center justify-center transform -skew-x-12">
-            <span class="text-3xl mb-2 group-hover:text-black transition-colors">📝</span>
-            <span class="text-xl font-bold group-hover:text-black transition-colors">登録</span>
+            <span class="text-4xl mb-3 group-hover:text-black transition-colors">📝</span>
+            <span class="text-2xl font-bold group-hover:text-black transition-colors">登録</span>
           </div>
         </button>
 
         <!-- 4. SETTINGS -->
         <button @click="triggerAction('Settings')" class="flex-1 group relative focus:outline-none">
-          <div class="absolute inset-0 bg-gray-800 border-2 border-gray-500 transform -skew-x-12 group-hover:bg-gray-700 group-hover:border-green-400 group-hover:-translate-y-1 transition-all"></div>
+          <div class="absolute inset-0 bg-gray-800 border-3 border-gray-500 transform -skew-x-12 group-hover:bg-gray-700 group-hover:border-green-400 group-hover:-translate-y-1 transition-all"></div>
           <div class="absolute inset-0 flex flex-col items-center justify-center transform -skew-x-12">
-            <span class="text-3xl mb-2 animate-spin-slow">⚙️</span>
-            <span class="text-xl font-bold">設定</span>
+            <span class="text-4xl mb-3 animate-spin-slow">⚙️</span>
+            <span class="text-2xl font-bold">設定</span>
           </div>
         </button>
       </div>
@@ -814,7 +814,7 @@ onUnmounted(() => {
     </section>
 
     <!-- Footer Status -->
-    <footer class="relative z-10 bg-black border-t border-gray-800 p-2 px-6 flex justify-between items-center text-sm text-gray-600 font-mono shrink-0">
+    <footer class="relative z-10 bg-black border-t border-gray-800 p-3 px-8 flex justify-between items-center text-base text-gray-600 font-mono shrink-0">
       <div>SYS_STATUS: <span class="text-green-600 animate-pulse">● NORMAL</span></div>
       <div>CLUB-ROOM-KING-SYS v1.2</div>
     </footer>

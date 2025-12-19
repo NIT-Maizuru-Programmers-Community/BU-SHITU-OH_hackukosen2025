@@ -609,6 +609,176 @@ def fetch_today_attendance_count() -> dict:
         }
 
 
+# ポイント付与の基準値
+POINTS_BY_RANK = {
+    1: 100,  # 1位
+    2: 50,   # 2位
+    3: 10    # 3位
+}
+
+
+def award_points_to_user(user_id: str, amount: int, bet_type: str, description: str, related_id: str = None) -> dict:
+    """
+    ユーザーにポイントを付与する（Vercel API経由）
+    
+    Args:
+        user_id: ユーザーID
+        amount: 付与するポイント数
+        bet_type: ポイントの種類（例: "race_bet"）
+        description: 説明文
+        related_id: 関連ID（レースIDなど）
+    
+    Returns:
+        結果を含む辞書
+    """
+    try:
+        print(f"\n=== ポイント付与開始 ===")
+        print(f"User ID: {user_id}")
+        print(f"Amount: {amount}")
+        print(f"Type: {bet_type}")
+        print(f"Description: {description}")
+        
+        url = f'{API_ENDPOINT}/api/points/award'
+        
+        payload = {
+            'userId': user_id,
+            'amount': amount,
+            'type': bet_type,
+            'description': description
+        }
+        
+        if related_id:
+            payload['relatedId'] = related_id
+        
+        response = requests.post(
+            url,
+            headers={
+                'Content-Type': 'application/json',
+                'x-api-key': API_KEY
+            },
+            json=payload,
+            timeout=10
+        )
+        
+        print(f"Response Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"✓ ポイント付与成功: {data}")
+            return {'success': True, 'data': data}
+        else:
+            error_msg = f'サーバーエラー (HTTP {response.status_code})'
+            print(f"✗ {error_msg}")
+            print(f"Response: {response.text}")
+            return {
+                'success': False,
+                'error': error_msg,
+                'details': response.text
+            }
+            
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"\n✗ ポイント付与エラー:")
+        print(error_trace)
+        return {
+            'success': False,
+            'error': f'通信エラー: {str(e)}',
+            'traceback': error_trace
+        }
+
+
+def award_points_for_race(characters: List[Dict], bets: List[Dict], race_id: str = None) -> dict:
+    """
+    レース結果に基づいてベットしたユーザーにポイントを付与
+    
+    Args:
+        characters: レース結果（キャラクターと順位）
+        bets: ベット情報のリスト
+        race_id: レースID（任意）
+    
+    Returns:
+        結果を含む辞書
+    """
+    try:
+        print(f"\n=== レースポイント付与開始 ===")
+        
+        if not bets:
+            print("ベットがないためポイント付与をスキップ")
+            return {'success': True, 'awarded': []}
+        
+        # キャラクター名から順位を取得するマッピングを作成
+        character_rank_map = {}
+        for char in characters:
+            char_name = char.get('name', '')
+            char_rank = char.get('rank')
+            if char_name and char_rank:
+                character_rank_map[char_name] = char_rank
+        
+        print(f"Character Ranks: {character_rank_map}")
+        
+        awarded_results = []
+        
+        for bet in bets:
+            user_id = bet.get('userId')
+            user_name = bet.get('displayName', 'Unknown')
+            selected_bet = bet.get('selectedBet', '')
+            
+            if not user_id or user_id == 'unknown':
+                print(f"⚠ ユーザーIDが不明: {bet}")
+                continue
+            
+            # ベットしたキャラクターの順位を取得
+            bet_rank = character_rank_map.get(selected_bet)
+            
+            if bet_rank is None:
+                print(f"⚠ ベットしたキャラクター'{selected_bet}'の順位が不明")
+                continue
+            
+            # 順位に応じたポイントを取得
+            points = POINTS_BY_RANK.get(bet_rank, 0)
+            
+            if points > 0:
+                description = f"レースベット: {selected_bet}({bet_rank}位)"
+                
+                result = award_points_to_user(
+                    user_id=user_id,
+                    amount=points,
+                    bet_type="race_bet",
+                    description=description,
+                    related_id=race_id
+                )
+                
+                awarded_results.append({
+                    'userId': user_id,
+                    'userName': user_name,
+                    'selectedBet': selected_bet,
+                    'rank': bet_rank,
+                    'points': points,
+                    'success': result['success']
+                })
+                
+                print(f"✓ {user_name}: {selected_bet}({bet_rank}位) -> {points}pt")
+            else:
+                print(f"- {user_name}: {selected_bet}({bet_rank}位) -> 0pt (ポイントなし)")
+        
+        print(f"\n=== ポイント付与完了 ===")
+        print(f"付与数: {len(awarded_results)}件")
+        
+        return {'success': True, 'awarded': awarded_results}
+        
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"\n✗ レースポイント付与エラー:")
+        print(error_trace)
+        return {
+            'success': False,
+            'error': f'ポイント付与エラー: {str(e)}',
+            'traceback': error_trace
+        }
+
+
 def submit_race_result(characters: List[Dict], bets: Optional[List[Dict]] = None) -> dict:
     """
     レース結果をFirestoreに保存
@@ -721,6 +891,13 @@ def submit_race_result(characters: List[Dict], bets: Optional[List[Dict]] = None
             # openのレースがない → 新規作成
             print("次のレース用にopenのレースを作成...")
             
+            # デフォルトのキャラクター（プログラミング言語）
+            default_characters = [
+                {'characterId': 'c', 'name': 'C言語', 'emoji': '🇨', 'rank': None},
+                {'characterId': 'python', 'name': 'Python', 'emoji': '🐍', 'rank': None},
+                {'characterId': 'javascript', 'name': 'JavaScript', 'emoji': '🟨', 'rank': None}
+            ]
+            
             next_race_data = {
                 'date': date_str,
                 'status': 'open',
@@ -731,7 +908,7 @@ def submit_race_result(characters: List[Dict], bets: Optional[List[Dict]] = None
                 'winnerName': None,
                 'winnerEmoji': None,
                 'finalOdds': 1.0,
-                'characters': [],
+                'characters': default_characters,
                 'bets': [],
                 'createdAt': timestamp_str,
                 'updatedAt': timestamp_str
@@ -746,12 +923,23 @@ def submit_race_result(characters: List[Dict], bets: Optional[List[Dict]] = None
         else:
             print("openのレースが既に存在します。作成をスキップ。")
         
+        # 3. ベット結果に応じてポイントを付与
+        print("\nポイント付与処理開始...")
+        points_result = award_points_for_race(characters, bets, race_id)
+        
+        if points_result['success']:
+            awarded_count = len(points_result.get('awarded', []))
+            print(f"✓ ポイント付与完了: {awarded_count}件")
+        else:
+            print(f"⚠ ポイント付与に失敗: {points_result.get('error')}")
+        
         return {
             'success': True, 
             'data': {
                 'id': race_id,
                 'status': 'finished',
-                'winnerName': winner['name'] if winner else None
+                'winnerName': winner['name'] if winner else None,
+                'pointsAwarded': points_result.get('awarded', [])
             }
         }
             
