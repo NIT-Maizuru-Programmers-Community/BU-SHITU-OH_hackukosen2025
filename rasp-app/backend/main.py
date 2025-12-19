@@ -796,7 +796,11 @@ async def get_today_attendance_count():
         result = fetch_today_attendance_count()
         
         if result['success']:
-            return result['data']
+            # Vue側が期待する形式で返す: { success: true, data: { count: N } }
+            return {
+                'success': True,
+                'data': result['data']
+            }
         else:
             # エラー詳細をログに出力
             print(f"Attendance count fetch failed: {result.get('error')}")

@@ -617,12 +617,12 @@ onUnmounted(() => {
     <div class="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-green-900/10 to-transparent transform skew-x-12 z-0 pointer-events-none"></div>
 
     <!-- UPPER SECTION: Header / Top Bar -->
-    <header class="relative z-10 w-full h-24 px-6 flex justify-between items-center border-b-4 border-green-600 bg-black/80 backdrop-blur-sm shrink-0">
-      <div class="flex items-center gap-4">
+    <header class="relative z-10 w-full h-32 px-8 flex justify-between items-center border-b-4 border-green-600 bg-black/80 backdrop-blur-sm shrink-0">
+      <div class="flex items-center gap-6">
         <!-- Logo (画像を使用する場合は、public/logo.pngに配置してsrc="/logo.png"に変更) -->
         <img src="./logo.png" 
              alt="部室王ロゴ" 
-             class="h-16 md:h-20 object-contain transform -skew-x-6 drop-shadow-[0_0_10px_rgba(0,255,0,0.5)]"
+             class="h-24 object-contain transform -skew-x-6 drop-shadow-[0_0_10px_rgba(0,255,0,0.5)]"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
         
         <!-- Title Text -->
@@ -631,13 +631,13 @@ onUnmounted(() => {
         </h1>-->
 
         <!-- Current King Display -->
-        <div class="hidden lg:flex items-center gap-4 ml-6">
+        <div class="hidden lg:flex items-center gap-6 ml-8">
           <div class="flex flex-col transform -skew-x-12">
-            <div class="bg-gradient-to-r from-yellow-900/80 to-black border-2 border-yellow-500 px-6 py-1 shadow-[0_0_15px_rgba(234,179,8,0.4)] flex items-center gap-3">
-              <span class="text-2xl animate-pulse">👑</span>
+            <div class="bg-gradient-to-r from-yellow-900/80 to-black border-2 border-yellow-500 px-8 py-2 shadow-[0_0_15px_rgba(234,179,8,0.4)] flex items-center gap-4">
+              <span class="text-4xl animate-pulse">👑</span>
               <div>
-                <span class="text-[10px] text-yellow-400 font-bold block leading-none mb-1 tracking-wider">現在の部室王</span>
-                <span class="text-xl font-black text-white leading-none italic tracking-wider shadow-black drop-shadow-md">
+                <span class="text-sm text-yellow-400 font-bold block leading-none mb-1 tracking-wider">現在の部室王</span>
+                <span class="text-2xl font-black text-white leading-none italic tracking-wider shadow-black drop-shadow-md">
                   {{ rankingData.length > 0 && rankingData[0].rank === 1 ? rankingData[0].name : '---' }}
                 </span>
               </div>
@@ -646,12 +646,12 @@ onUnmounted(() => {
           
           <!-- Attendance Count -->
           <div class="flex flex-col transform -skew-x-12">
-            <div class="bg-gradient-to-r from-green-900/80 to-black border-2 border-green-500 px-6 py-1 shadow-[0_0_15px_rgba(0,255,0,0.4)] flex items-center gap-3">
-              <span class="text-2xl">👥</span>
+            <div class="bg-gradient-to-r from-green-900/80 to-black border-2 border-green-500 px-8 py-2 shadow-[0_0_15px_rgba(0,255,0,0.4)] flex items-center gap-4">
+              <span class="text-4xl">👥</span>
               <div>
-                <span class="text-[10px] text-green-400 font-bold block leading-none mb-1 tracking-wider">今日来た人数</span>
-                <span class="text-xl font-black text-white leading-none italic tracking-wider shadow-black drop-shadow-md">
-                  {{ attendanceCount }} <span class="text-sm text-gray-400">人</span>
+                <span class="text-sm text-green-400 font-bold block leading-none mb-1 tracking-wider">今日来た人数</span>
+                <span class="text-2xl font-black text-white leading-none italic tracking-wider shadow-black drop-shadow-md">
+                  {{ attendanceCount }} <span class="text-lg text-gray-400">人</span>
                 </span>
               </div>
             </div>
@@ -661,13 +661,13 @@ onUnmounted(() => {
       
       <!-- Live Clock -->
       <div class="flex flex-col items-end transform -skew-x-6">
-        <div class="text-4xl font-['Russo_One'] text-green-400 leading-none drop-shadow-[0_0_5px_rgba(0,255,0,0.8)]">{{ currentTime }}</div>
-        <div class="text-sm font-bold text-gray-400 tracking-widest">{{ currentDate }}</div>
+        <div class="text-5xl font-['Russo_One'] text-green-400 leading-none drop-shadow-[0_0_5px_rgba(0,255,0,0.8)]">{{ currentTime }}</div>
+        <div class="text-lg font-bold text-gray-400 tracking-widest">{{ currentDate }}</div>
       </div>
     </header>
 
     <!-- MIDDLE SECTION: Art Panel & Ranking -->
-    <main class="relative z-10 flex-1 flex gap-6 p-6 pb-2 min-h-0">
+    <main class="relative z-10 flex-1 flex gap-8 p-8 pb-4 min-h-0">
       
       <!-- LEFT: Art Panel -->
       <section class="flex-[3] relative flex flex-col min-h-0">
@@ -690,30 +690,30 @@ onUnmounted(() => {
       </section>
 
       <!-- RIGHT: Ranking -->
-      <section class="flex-[1] min-w-[300px] flex flex-col">
+      <section class="flex-[1] min-w-[380px] flex flex-col">
         <!-- Header -->
-        <div class="bg-black border-2 border-green-500 px-4 py-1 mb-2 transform -skew-x-12 w-full shadow-[4px_4px_0px_rgba(0,255,0,0.3)]">
-          <h3 class="text-xl font-black italic text-white text-center transform skew-x-12 tracking-wider">
+        <div class="bg-black border-2 border-green-500 px-6 py-2 mb-3 transform -skew-x-12 w-full shadow-[4px_4px_0px_rgba(0,255,0,0.3)]">
+          <h3 class="text-2xl font-black italic text-white text-center transform skew-x-12 tracking-wider">
             🏆 RANKING
           </h3>
         </div>
         
         <!-- List -->
-        <div class="flex-1 overflow-y-auto no-scrollbar space-y-2 pr-2">
+        <div class="flex-1 overflow-y-auto no-scrollbar space-y-3 pr-2">
           <!-- Loading State -->
-          <div v-if="rankingLoading && rankingData.length === 0" class="text-center text-green-500 py-4">
-            <div class="animate-pulse">ランキング読み込み中...</div>
+          <div v-if="rankingLoading && rankingData.length === 0" class="text-center text-green-500 py-6">
+            <div class="animate-pulse text-lg">ランキング読み込み中...</div>
           </div>
           
           <!-- Error State -->
-          <div v-else-if="rankingError && rankingData.length === 0" class="text-center text-red-500 py-4">
-            <div>エラー: {{ rankingError }}</div>
-            <button @click="fetchRanking()" class="mt-2 text-sm text-green-400 underline">再読み込み</button>
+          <div v-else-if="rankingError && rankingData.length === 0" class="text-center text-red-500 py-6">
+            <div class="text-lg">エラー: {{ rankingError }}</div>
+            <button @click="fetchRanking()" class="mt-2 text-base text-green-400 underline">再読み込み</button>
           </div>
           
           <!-- Ranking List -->
           <div v-else v-for="(user, index) in rankingData" :key="user.rank || index" 
-               class="relative group h-14 transform -skew-x-12 transition-all duration-200 hover:scale-[1.02] hover:translate-x-1">
+               class="relative group h-16 transform -skew-x-12 transition-all duration-200 hover:scale-[1.02] hover:translate-x-1">
             
             <!-- Background -->
             <div :class="[
@@ -725,21 +725,21 @@ onUnmounted(() => {
             ]"></div>
             
             <!-- Content -->
-            <div class="absolute inset-0 flex items-center justify-between px-4 transform skew-x-12">
-              <div class="flex items-center gap-3">
+            <div class="absolute inset-0 flex items-center justify-between px-5 transform skew-x-12">
+              <div class="flex items-center gap-4">
                 <div :class="[
-                  'font-black text-xl italic w-8 text-center',
-                  user.rank === 1 ? 'text-yellow-400 text-2xl' : 
+                  'font-black text-2xl italic w-10 text-center',
+                  user.rank === 1 ? 'text-yellow-400 text-3xl' : 
                   user.rank === 2 ? 'text-gray-300' : 
                   user.rank === 3 ? 'text-orange-400' : 'text-green-700'
                 ]">{{ user.rank }}</div>
-                <div class="font-bold text-sm md:text-base truncate max-w-[120px] flex items-center gap-1">
+                <div class="font-bold text-lg truncate max-w-[150px] flex items-center gap-2">
                   {{ user.name }}
-                  <span v-if="user.isPresident" class="text-yellow-400 text-xs">👑</span>
+                  <span v-if="user.isPresident" class="text-yellow-400 text-sm">👑</span>
                 </div>
               </div>
-              <div class="font-mono font-bold text-green-400 text-sm">
-                {{ user.points.toLocaleString() }} <span class="text-[10px] text-gray-500">PTS</span>
+              <div class="font-mono font-bold text-green-400 text-base">
+                {{ user.points.toLocaleString() }} <span class="text-xs text-gray-500">PTS</span>
               </div>
             </div>
           </div>
@@ -748,18 +748,18 @@ onUnmounted(() => {
     </main>
 
     <!-- LOWER SECTION: Buttons & Events -->
-    <section class="relative z-10 h-40 shrink-0 flex gap-4 px-6 pb-8">
+    <section class="relative z-10 h-48 shrink-0 flex gap-6 px-8 pb-8">
       
       <!-- BUTTONS GROUP (Left, Grows) -->
-      <div class="flex-[3] flex gap-3 h-full">
+      <div class="flex-[3] flex gap-4 h-full">
         
         <!-- 1. LOGIN -->
         <button @click="triggerAction('Login')" class="flex-[1.2] group relative focus:outline-none">
           <div class="absolute inset-0 bg-green-600 border-4 border-white transform -skew-x-12 shadow-[6px_6px_0px_rgba(0,0,0,0.5)] group-hover:bg-green-500 group-hover:shadow-[8px_8px_0px_rgba(0,0,0,0.8)] group-hover:-translate-y-1 transition-all"></div>
           <div class="absolute inset-0 flex flex-col items-center justify-center transform -skew-x-12 group-hover:scale-105 transition-transform">
-            <span class="text-4xl mb-1 drop-shadow-md">⚡</span>
-            <span class="text-2xl font-black italic tracking-tighter text-black">LOGIN</span>
-            <span class="text-[10px] bg-black text-white px-2 py-0.5 font-bold">入室</span>
+            <span class="text-5xl mb-2 drop-shadow-md">⚡</span>
+            <span class="text-3xl font-black italic tracking-tighter text-black">LOGIN</span>
+            <span class="text-sm bg-black text-white px-3 py-1 font-bold">入室</span>
           </div>
         </button>
 
@@ -767,9 +767,9 @@ onUnmounted(() => {
         <button @click="triggerAction('Race')" class="flex-1 group relative focus:outline-none">
           <div class="absolute inset-0 bg-black border-2 border-green-500 transform -skew-x-12 shadow-[4px_4px_0px_rgba(0,255,0,0.2)] group-hover:bg-green-900 group-hover:-translate-y-1 transition-all"></div>
           <div class="absolute inset-0 flex flex-col items-center justify-center transform -skew-x-12">
-            <span class="text-3xl mb-1 group-hover:rotate-12 transition-transform">🏁</span>
-            <span class="text-xl font-black italic text-white">RACE</span>
-            <span class="text-[10px] text-green-400 font-bold">今日のレース</span>
+            <span class="text-4xl mb-2 group-hover:rotate-12 transition-transform">🏁</span>
+            <span class="text-2xl font-black italic text-white">RACE</span>
+            <span class="text-sm text-green-400 font-bold">今日のレース</span>
           </div>
         </button>
 
@@ -777,8 +777,8 @@ onUnmounted(() => {
         <button @click="triggerAction('Register')" class="flex-1 group relative focus:outline-none">
           <div class="absolute inset-0 bg-gray-800 border-2 border-gray-500 transform -skew-x-12 group-hover:bg-white group-hover:border-white group-hover:-translate-y-1 transition-all"></div>
           <div class="absolute inset-0 flex flex-col items-center justify-center transform -skew-x-12">
-            <span class="text-2xl mb-1 group-hover:text-black transition-colors">📝</span>
-            <span class="text-lg font-bold group-hover:text-black transition-colors">登録</span>
+            <span class="text-3xl mb-2 group-hover:text-black transition-colors">📝</span>
+            <span class="text-xl font-bold group-hover:text-black transition-colors">登録</span>
           </div>
         </button>
 
@@ -786,27 +786,27 @@ onUnmounted(() => {
         <button @click="triggerAction('Settings')" class="flex-1 group relative focus:outline-none">
           <div class="absolute inset-0 bg-gray-800 border-2 border-gray-500 transform -skew-x-12 group-hover:bg-gray-700 group-hover:border-green-400 group-hover:-translate-y-1 transition-all"></div>
           <div class="absolute inset-0 flex flex-col items-center justify-center transform -skew-x-12">
-            <span class="text-2xl mb-1 animate-spin-slow">⚙️</span>
-            <span class="text-lg font-bold">設定</span>
+            <span class="text-3xl mb-2 animate-spin-slow">⚙️</span>
+            <span class="text-xl font-bold">設定</span>
           </div>
         </button>
       </div>
 
       <!-- EVENTS (Right End, Fixed Width) -->
-      <div class="w-64 shrink-0 flex flex-col h-full transform -skew-x-6 ml-2">
+      <div class="w-80 shrink-0 flex flex-col h-full transform -skew-x-6 ml-2">
         <!-- Event Header -->
-        <div class="bg-gradient-to-r from-purple-900 to-black border border-purple-500 px-2 py-1 mb-1">
-          <h3 class="text-xs font-black text-purple-300 tracking-widest text-center">EVENT SCHEDULE</h3>
+        <div class="bg-gradient-to-r from-purple-900 to-black border border-purple-500 px-3 py-2 mb-2">
+          <h3 class="text-sm font-black text-purple-300 tracking-widest text-center">EVENT SCHEDULE</h3>
         </div>
         
         <!-- Event List -->
-        <div class="flex-1 bg-black/50 border border-gray-700 p-2 overflow-y-auto no-scrollbar space-y-2">
-          <div v-for="(event, i) in eventData" :key="i" class="flex items-center justify-between text-xs border-b border-gray-800 pb-1 last:border-0">
+        <div class="flex-1 bg-black/50 border border-gray-700 p-3 overflow-y-auto no-scrollbar space-y-3">
+          <div v-for="(event, i) in eventData" :key="i" class="flex items-center justify-between text-sm border-b border-gray-800 pb-2 last:border-0">
             <div>
               <span class="text-green-400 font-bold mr-2">{{ event.date }}</span>
               <span class="text-gray-200">{{ event.title }}</span>
             </div>
-            <span class="bg-red-600 text-white px-1 font-bold text-[10px] rounded">{{ event.bonus }}</span>
+            <span class="bg-red-600 text-white px-2 py-0.5 font-bold text-xs rounded">{{ event.bonus }}</span>
           </div>
         </div>
       </div>
@@ -814,7 +814,7 @@ onUnmounted(() => {
     </section>
 
     <!-- Footer Status -->
-    <footer class="relative z-10 bg-black border-t border-gray-800 p-1 px-4 flex justify-between items-center text-[10px] text-gray-600 font-mono shrink-0">
+    <footer class="relative z-10 bg-black border-t border-gray-800 p-2 px-6 flex justify-between items-center text-sm text-gray-600 font-mono shrink-0">
       <div>SYS_STATUS: <span class="text-green-600 animate-pulse">● NORMAL</span></div>
       <div>CLUB-ROOM-KING-SYS v1.2</div>
     </footer>
