@@ -75,12 +75,38 @@ def match(debugmode = False):
     c = generate(length - distance, points)
 
     winner = random.randint(1, 3)
+    
+    # 2位、3位もランダムに決定（勝者以外から）
+    remaining = [1, 2, 3]
+    remaining.remove(winner)
+    second = random.choice(remaining)
+    remaining.remove(second)
+    third = remaining[0]
+    
+    # 各キャラクターの最終距離を設定
+    final_distances = {1: length - distance, 2: length - distance, 3: length - distance}
+    
     if winner == 1:
         a[-1] = a[-1] + distance
-    if winner == 2:
+        final_distances[1] = length
+    elif winner == 2:
         b[-1] = b[-1] + distance
-    if winner == 3:
+        final_distances[2] = length
+    elif winner == 3:
         c[-1] = c[-1] + distance
+        final_distances[3] = length
+    
+    # 2位に少しのアドバンテージを追加
+    second_boost = distance // 3
+    if second == 1:
+        a[-1] = a[-1] + second_boost
+        final_distances[1] += second_boost
+    elif second == 2:
+        b[-1] = b[-1] + second_boost
+        final_distances[2] += second_boost
+    elif second == 3:
+        c[-1] = c[-1] + second_boost
+        final_distances[3] += second_boost
 
     if debugmode:
         printer(a)
@@ -134,4 +160,15 @@ def match(debugmode = False):
     #シリアル通信を終了
     mySerial.close()
 
-    return winner
+    # 全順位を返す
+    return {
+        'winner': winner,
+        'second': second, 
+        'third': third,
+        'final_distances': final_distances,
+        'rankings': {
+            1: winner,
+            2: second,
+            3: third
+        }
+    }

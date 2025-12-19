@@ -1068,27 +1068,51 @@ async def run_race():
             print("（モーターが動作します）")
             
             # レースを実行（モーター制御）
-            winner = bushituoh.match(debugmode=True)
+            race_result = bushituoh.match(debugmode=True)
             
-            print(f"\n勝者番号: {winner}")
+            # 新しい戻り値形式（辞書）をチェック
+            if isinstance(race_result, dict):
+                winner = race_result['winner']
+                second = race_result['second']
+                third = race_result['third']
+                print(f"\n=== 完全なレース結果 ===")
+                print(f"1位: {winner}")
+                print(f"2位: {second}")
+                print(f"3位: {third}")
+                print(f"最終距離: {race_result.get('final_distances', {})}")
+                print("="*25 + "\n")
+            else:
+                # 従来の戻り値形式（勝者番号のみ）
+                winner = race_result
+                # 勝者以外をランダムに決定（後方互換性）
+                all_positions = [1, 2, 3]
+                all_positions.remove(winner)
+                import random
+                random.shuffle(all_positions)
+                second = all_positions[0]
+                third = all_positions[1]
+                print(f"\n勝者番号: {winner}（従来形式）")
+                print("⚠ 2位・3位はランダム決定です")
             
         except ImportError as e:
             print(f"⚠ bushituohモジュールが見つかりません: {e}")
-            print("ダミーモードで実行します（ランダム勝者）")
+            print("ダミーモードで実行します（ランダム順位）")
             import random
-            winner = random.randint(1, 3)
+            positions = [1, 2, 3]
+            random.shuffle(positions)
+            winner = positions[0]
+            second = positions[1]
+            third = positions[2]
             
         except Exception as e:
             print(f"⚠ モーター制御エラー: {e}")
-            print("ダミーモードで実行します（ランダム勝者）")
+            print("ダミーモードで実行します（ランダム順位）")
             import random
-            winner = random.randint(1, 3)
-        
-        # 勝者以外の順位をランダムに決定
-        all_positions = [1, 2, 3]
-        all_positions.remove(winner)
-        import random
-        random.shuffle(all_positions)
+            positions = [1, 2, 3]
+            random.shuffle(positions)
+            winner = positions[0]
+            second = positions[1]
+            third = positions[2]
         
         # 結果を構築
         results = []
@@ -1096,12 +1120,10 @@ async def run_race():
         winner_info['rank'] = 1
         results.append(winner_info)
         
-        second = all_positions[0]
         second_info = WINNER_MAPPING[second].copy()
         second_info['rank'] = 2
         results.append(second_info)
         
-        third = all_positions[1]
         third_info = WINNER_MAPPING[third].copy()
         third_info['rank'] = 3
         results.append(third_info)
