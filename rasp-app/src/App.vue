@@ -240,11 +240,6 @@ const handleRegisterResult = (data) => {
     }
   }
 }
-        }
-      }, 3000)
-    }
-  }
-}
 
 // Race functions
 const startRace = () => {
