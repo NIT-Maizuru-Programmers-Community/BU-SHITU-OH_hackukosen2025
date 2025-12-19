@@ -9,11 +9,17 @@ const currentTime = ref('')
 const currentDate = ref('')
 const modal = ref({ show: false, title: '' })
 
+// WebSocket connection
+let ws = null
+const wsConnected = ref(false)
+
 // Login flow state
 const loginState = ref({
   show: false,
-  step: 'select', // 'select' | 'complete'
-  selectedBet: null
+  step: 'select', // 'select' | 'complete' | 'waiting' | 'result'
+  selectedBet: null,
+  nfcWaiting: false,
+  loginResult: null
 })
 
 // Race state
@@ -82,8 +88,14 @@ const updateTime = () => {
 const triggerAction = (actionName) => {
   console.log(`Action: ${actionName}`)
   if (actionName === 'Login') {
-    // Open login flow
-    loginState.value = { show: true, step: 'select', selectedBet: null }
+    // Open login flow with NFC waiting
+    loginState.value = { 
+      show: true, 
+      step: 'waiting', 
+      selectedBet: null,
+      nfcWaiting: true,
+      loginResult: null
+    }
   } else if (actionName === 'Race') {
     // Start race
     startRace()
@@ -93,6 +105,90 @@ const triggerAction = (actionName) => {
   } else {
     modal.value = { show: true, title: actionName.toUpperCase() }
     setTimeout(() => { if(modal.value.show) closeModal() }, 1500)
+  }
+}
+
+// WebSocket functions
+const connectWebSocket = () => {
+  const wsUrl = 'ws://localhost:8000/ws/nfc'
+  
+  ws = new WebSocket(wsUrl)
+  
+  ws.onopen = () => {
+    console.log('WebSocket接続成功')
+    wsConnected.value = true
+  }
+  
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data)
+    console.log('WebSocketメッセージ受信:', data)
+    
+    if (data.type === 'card_detected') {
+      // NFCカード検出
+      console.log('NFCカード検出:', data.cardId)
+    } else if (data.type === 'login_result') {
+      // ログイン結果受信
+      handleLoginResult(data)
+    }
+  }
+  
+  ws.onerror = (error) => {
+    console.error('WebSocketエラー:', error)
+    wsConnected.value = false
+  }
+  
+  ws.onclose = () => {
+    console.log('WebSocket切断')
+    wsConnected.value = false
+    
+    // 5秒後に再接続を試みる
+    setTimeout(() => {
+      if (!wsConnected.value) {
+        console.log('WebSocket再接続を試みます...')
+        connectWebSocket()
+      }
+    }, 5000)
+  }
+}
+
+const handleLoginResult = (data) => {
+  if (loginState.value.show && loginState.value.step === 'waiting') {
+    if (data.success) {
+      // ログイン成功
+      const user = data.data?.user || {}
+      const bonus = data.data?.bonus || {}
+      
+      loginState.value.step = 'result'
+      loginState.value.loginResult = {
+        success: true,
+        userName: user.displayName || 'ゲスト',
+        points: bonus.points || 0,
+        totalPoints: user.totalPoints || 0,
+        message: bonus.awarded ? 'ログインボーナス獲得！' : 'ログイン済み'
+      }
+      
+      // 3秒後に閉じる
+      setTimeout(() => {
+        if (loginState.value.show) {
+          closeLoginModal()
+        }
+      }, 3000)
+    } else {
+      // エラー
+      loginState.value.step = 'result'
+      loginState.value.loginResult = {
+        success: false,
+        error: data.error || '不明なエラー',
+        code: data.code
+      }
+      
+      // 3秒後に閉じる
+      setTimeout(() => {
+        if (loginState.value.show) {
+          closeLoginModal()
+        }
+      }, 3000)
+    }
   }
 }
 
@@ -226,7 +322,13 @@ const selectBet = (bet) => {
 }
 
 const closeLoginModal = () => {
-  loginState.value = { show: false, step: 'select', selectedBet: null }
+  loginState.value = { 
+    show: false, 
+    step: 'select', 
+    selectedBet: null,
+    nfcWaiting: false,
+    loginResult: null
+  }
 }
 
 const closeModal = () => modal.value.show = false
@@ -234,9 +336,19 @@ const closeModal = () => modal.value.show = false
 onMounted(() => {
   updateTime()
   timer = setInterval(updateTime, 1000)
+  
+  // WebSocket接続
+  connectWebSocket()
 })
 
-onUnmounted(() => clearInterval(timer))
+onUnmounted(() => {
+  clearInterval(timer)
+  
+  // WebSocket切断
+  if (ws) {
+    ws.close()
+  }
+})
 </script>
 
 <template>
@@ -431,7 +543,129 @@ onUnmounted(() => clearInterval(timer))
     <!-- Login Modal -->
     <div v-if="loginState.show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md">
       
-      <!-- Step 1: Bet Selection -->
+      <!-- NFC Waiting -->
+      <div v-if="loginState.step === 'waiting'" class="text-center">
+        <div class="mb-12">
+          <div class="relative inline-block">
+            <!-- Glow effect -->
+            <div class="absolute inset-0 blur-3xl bg-green-500/30 rounded-full scale-150"></div>
+            
+            <!-- Icon -->
+            <div class="relative text-9xl mb-8 animate-pulse">
+              📱
+            </div>
+          </div>
+          
+          <!-- Text -->
+          <div class="bg-green-600 px-12 py-6 transform -skew-x-12 inline-block shadow-[0_0_50px_rgba(0,255,0,0.5)] mb-4">
+            <h2 class="text-4xl font-black text-white italic transform skew-x-12 tracking-wider">
+              NFC カードをかざしてください
+            </h2>
+          </div>
+          
+          <div class="mt-6 text-gray-400 text-lg">
+            カードリーダーに近づけてお待ちください
+          </div>
+          
+          <!-- Animated rings (NFC signal effect) -->
+          <div class="relative h-32 mt-8">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <div class="w-20 h-20 border-4 border-green-500 rounded-full animate-ping"></div>
+            </div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animation-delay-150">
+              <div class="w-20 h-20 border-4 border-green-400 rounded-full animate-ping"></div>
+            </div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animation-delay-300">
+              <div class="w-20 h-20 border-4 border-green-300 rounded-full animate-ping"></div>
+            </div>
+          </div>
+          
+          <!-- WebSocket status -->
+          <div class="mt-4 text-xs">
+            <span :class="wsConnected ? 'text-green-500' : 'text-red-500'">
+              {{ wsConnected ? '● 接続中' : '● 切断' }}
+            </span>
+          </div>
+        </div>
+        
+        <!-- Back button -->
+        <button 
+          @click="closeLoginModal"
+          class="group relative focus:outline-none mt-8"
+        >
+          <div class="bg-gray-700 border-4 border-gray-500 px-12 py-4 transform -skew-x-12 shadow-[6px_6px_0px_rgba(0,0,0,0.5)] group-hover:bg-gray-600 group-hover:-translate-y-1 transition-all">
+            <span class="text-2xl font-black italic text-white transform skew-x-12 inline-block tracking-wider">
+              ← キャンセル
+            </span>
+          </div>
+        </button>
+      </div>
+      
+      <!-- Login Result -->
+      <div v-if="loginState.step === 'result'" class="text-center">
+        <div class="relative">
+          <!-- Glow effect -->
+          <div :class="[
+            'absolute inset-0 blur-3xl rounded-full scale-150',
+            loginState.loginResult?.success ? 'bg-green-500/30' : 'bg-red-500/30'
+          ]"></div>
+          
+          <!-- Content -->
+          <div class="relative">
+            <!-- Success -->
+            <div v-if="loginState.loginResult?.success">
+              <div class="text-9xl mb-6 animate-bounce">
+                ⭐
+              </div>
+              
+              <div class="bg-green-600 px-12 py-4 transform -skew-x-12 inline-block shadow-[0_0_50px_rgba(0,255,0,0.5)]">
+                <h2 class="text-4xl font-black text-white italic transform skew-x-12 tracking-wider">
+                  {{ loginState.loginResult.message }}
+                </h2>
+              </div>
+              
+              <div class="mt-6 space-y-2">
+                <div class="text-2xl font-bold text-white">
+                  {{ loginState.loginResult.userName }} さん
+                </div>
+                <div class="text-3xl font-black text-green-400 font-['Russo_One']">
+                  +{{ loginState.loginResult.points }} pts
+                </div>
+                <div class="text-gray-400">
+                  総ポイント: {{ loginState.loginResult.totalPoints }} pts
+                </div>
+              </div>
+            </div>
+            
+            <!-- Error -->
+            <div v-else>
+              <div class="text-9xl mb-6">
+                ❌
+              </div>
+              
+              <div class="bg-red-600 px-12 py-4 transform -skew-x-12 inline-block shadow-[0_0_50px_rgba(239,68,68,0.5)]">
+                <h2 class="text-4xl font-black text-white italic transform skew-x-12 tracking-wider">
+                  エラー
+                </h2>
+              </div>
+              
+              <div class="mt-6 text-xl text-red-400">
+                {{ loginState.loginResult?.error }}
+              </div>
+              
+              <div v-if="loginState.loginResult?.code === 'BAD_REQUEST'" class="mt-4 text-gray-400 text-sm">
+                カードを登録してください
+              </div>
+            </div>
+            
+            <div class="mt-6 text-gray-500 text-sm">
+              画面が自動的に閉じます...
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Step 1: Bet Selection (保留) -->
       <div v-if="loginState.step === 'select'" class="text-center">
         <!-- Header -->
         <div class="mb-8">
