@@ -65,7 +65,7 @@ def match(debugmode = False):
 
 
     #シリアル通信を開始
-    mySerial = serial.Serial("/dev/ttyAMA10", baudrate=115200, timeout=2)
+    mySerial = serial.Serial("/dev/ttyACM0", baudrate=115200, timeout=2)
     time.sleep(2)
 
 
