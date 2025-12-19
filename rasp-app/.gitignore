@@ -28,6 +28,12 @@ coverage
 
 .eslintcache
 
+# 環境変数ファイル（APIキーを含む）
+.env
+backend/.env
+backend/config.py
+backend/current_bets.json
+
 # Cypress
 /cypress/videos/
 /cypress/screenshots/

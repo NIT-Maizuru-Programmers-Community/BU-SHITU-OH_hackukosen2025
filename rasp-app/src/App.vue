@@ -66,15 +66,60 @@ let timer
 let raceTimer = null
 let countdownTimer = null
 
-// Mock Data
-const rankingData = ref([
-  { name: '山田 太郎', points: 15200 },
-  { name: '鈴木 花子', points: 12400 },
-  { name: '佐藤 健', points: 9800 },
-  { name: '高橋 優', points: 8500 },
-  { name: '田中 誠', points: 7200 },
-  { name: '伊藤 修', points: 6500 },
-])
+// API Configuration (環境変数から読み込み)
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+
+// Ranking Data
+const rankingData = ref([])
+const rankingLoading = ref(false)
+const rankingError = ref(null)
+
+// Attendance Data
+const attendanceCount = ref(0)
+const attendanceLoading = ref(false)
+const attendanceError = ref(null)
+
+// ランキング取得（FastAPIバックエンド経由）
+const fetchRanking = async (limit = 10) => {
+  rankingLoading.value = true
+  rankingError.value = null
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/ranking?limit=${limit}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const result = await response.json()
+    
+    if (result.success && result.ranking) {
+      rankingData.value = result.ranking.map(item => ({
+        rank: item.rank,
+        name: item.displayName,
+        points: item.totalPoints,
+        isPresident: item.isPresident
+      }))
+      console.log('Ranking fetched:', rankingData.value)
+    } else {
+      throw new Error('Invalid response format')
+    }
+  } catch (error) {
+    console.error('Failed to fetch ranking:', error)
+    rankingError.value = error.message
+    // フォールバック用のダミーデータ
+    rankingData.value = [
+      { rank: 1, name: 'データ取得中...', points: 0, isPresident: false }
+    ]
+  } finally {
+    rankingLoading.value = false
+  }
+}
 
 const eventData = ref([
   { date: '12/24', title: 'Xmas Party', bonus: 'x2.0' },
@@ -88,6 +133,120 @@ const updateTime = () => {
   currentTime.value = now.toLocaleTimeString('ja-JP', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
   const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
   currentDate.value = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} (${days[now.getDay()]})`
+}
+
+// 今日のログイン人数取得
+const fetchAttendanceCount = async () => {
+  attendanceLoading.value = true
+  attendanceError.value = null
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/attendance/today-count`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const result = await response.json()
+    
+    if (result.success && result.data) {
+      attendanceCount.value = result.data.count || 0
+      console.log('Attendance count fetched:', attendanceCount.value)
+    } else {
+      throw new Error('Invalid response format')
+    }
+  } catch (error) {
+    console.error('Failed to fetch attendance count:', error)
+    attendanceError.value = error.message
+    attendanceCount.value = 0
+  } finally {
+    attendanceLoading.value = false
+  }
+}
+
+// ベット情報をバックエンドに保存
+const saveBetToBackend = async (betInfo) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/bets`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(betInfo)
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const result = await response.json()
+    console.log('Bet saved to backend:', result)
+    return result
+  } catch (error) {
+    console.error('Failed to save bet to backend:', error)
+    throw error
+  }
+}
+
+// レース結果をFirebaseに送信
+const submitRaceResult = async (results) => {
+  try {
+    // キャラクターIDのマッピング
+    const characterIdMap = {
+      'ファイヤー': 'fire',
+      'サンダー': 'thunder',
+      'ウォーター': 'water'
+    }
+    
+    const characters = results.map(result => ({
+      characterId: characterIdMap[result.name] || result.name.toLowerCase(),
+      name: result.name,
+      emoji: result.icon,
+      rank: result.rank
+    }))
+    
+    console.log('Submitting race result:', { characters })
+    
+    const response = await fetch(`${BACKEND_URL}/api/races/result`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        characters
+        // betsはバックエンドのJSONファイルから取得
+      })
+    })
+    
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Server error response:', errorText)
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const result = await response.json()
+    console.log('Race result submitted successfully:', result)
+    return result
+  } catch (error) {
+    console.error('Failed to submit race result:', error)
+    throw error
+  }
+}
+
+// 定期的にランキングと人数を更新（60秒ごと）
+let rankingInterval = null
+const startRankingPolling = () => {
+  fetchRanking()
+  fetchAttendanceCount()
+  rankingInterval = setInterval(() => {
+    fetchRanking()
+    fetchAttendanceCount()
+  }, 60000) // 60秒ごとに更新
 }
 
 const triggerAction = (actionName) => {
@@ -190,7 +349,9 @@ const handleLoginResult = (data) => {
       
       loginState.value.loginResult = {
         success: true,
+        userId: user.userId || user.uid || 'unknown',
         userName: user.displayName || 'ゲスト',
+        user: user,
         points: bonus.points || 0,
         totalPoints: user.totalPoints || 0,
         message: bonus.awarded ? 'ログインボーナス獲得！' : 'ログイン済み'
@@ -331,6 +492,11 @@ const finishRace = () => {
   }))
   
   raceState.value.phase = 'result'
+  
+  // レース結果をFirebaseに送信
+  submitRaceResult(raceState.value.results).catch(err => {
+    console.error('Failed to submit race result to Firebase:', err)
+  })
 }
 
 const closeRace = () => {
@@ -353,6 +519,9 @@ const closeRace = () => {
     raceTime: 0,
     results: []
   }
+  
+  // ベット情報はバックエンドのJSONファイルで管理（レース結果送信時にクリアされる）
+  console.log('Race closed')
 }
 
 const closeRegister = () => {
@@ -372,6 +541,22 @@ const selectBet = (bet) => {
   loginState.value.selectedBet = bet
   loginState.value.step = 'complete'
   console.log(`Selected bet: ${bet.name}`)
+  
+  // ベット情報をバックエンドに保存
+  if (loginState.value.loginResult && loginState.value.loginResult.userName) {
+    const betInfo = {
+      userId: loginState.value.loginResult.userId || 'unknown',
+      displayName: loginState.value.loginResult.userName,
+      selectedBet: bet.name,
+      timestamp: new Date().toISOString()
+    }
+    
+    // バックエンドAPIに送信
+    saveBetToBackend(betInfo).catch(err => {
+      console.error('Failed to save bet:', err)
+    })
+    console.log('Bet sent to backend:', betInfo)
+  }
   
   // 結果表示に遷移してから2秒後に閉じる
   setTimeout(() => {
@@ -403,10 +588,18 @@ onMounted(() => {
   
   // WebSocket接続
   connectWebSocket()
+  
+  // ランキング取得開始
+  startRankingPolling()
 })
 
 onUnmounted(() => {
   clearInterval(timer)
+  
+  // ランキングポーリング停止
+  if (rankingInterval) {
+    clearInterval(rankingInterval)
+  }
   
   // WebSocket切断
   if (ws) {
@@ -438,12 +631,29 @@ onUnmounted(() => {
         </h1>-->
 
         <!-- Current King Display -->
-        <div class="hidden lg:flex flex-col transform -skew-x-12 ml-6">
-          <div class="bg-gradient-to-r from-yellow-900/80 to-black border-2 border-yellow-500 px-6 py-1 shadow-[0_0_15px_rgba(234,179,8,0.4)] flex items-center gap-3">
-            <span class="text-2xl animate-pulse">👑</span>
-            <div>
-              <span class="text-[10px] text-yellow-400 font-bold block leading-none mb-1 tracking-wider">現在の部室王</span>
-              <span class="text-xl font-black text-white leading-none italic tracking-wider shadow-black drop-shadow-md">山田 太郎</span>
+        <div class="hidden lg:flex items-center gap-4 ml-6">
+          <div class="flex flex-col transform -skew-x-12">
+            <div class="bg-gradient-to-r from-yellow-900/80 to-black border-2 border-yellow-500 px-6 py-1 shadow-[0_0_15px_rgba(234,179,8,0.4)] flex items-center gap-3">
+              <span class="text-2xl animate-pulse">👑</span>
+              <div>
+                <span class="text-[10px] text-yellow-400 font-bold block leading-none mb-1 tracking-wider">現在の部室王</span>
+                <span class="text-xl font-black text-white leading-none italic tracking-wider shadow-black drop-shadow-md">
+                  {{ rankingData.length > 0 && rankingData[0].rank === 1 ? rankingData[0].name : '---' }}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Attendance Count -->
+          <div class="flex flex-col transform -skew-x-12">
+            <div class="bg-gradient-to-r from-green-900/80 to-black border-2 border-green-500 px-6 py-1 shadow-[0_0_15px_rgba(0,255,0,0.4)] flex items-center gap-3">
+              <span class="text-2xl">👥</span>
+              <div>
+                <span class="text-[10px] text-green-400 font-bold block leading-none mb-1 tracking-wider">今日来た人数</span>
+                <span class="text-xl font-black text-white leading-none italic tracking-wider shadow-black drop-shadow-md">
+                  {{ attendanceCount }} <span class="text-sm text-gray-400">人</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -490,15 +700,27 @@ onUnmounted(() => {
         
         <!-- List -->
         <div class="flex-1 overflow-y-auto no-scrollbar space-y-2 pr-2">
-          <div v-for="(user, index) in rankingData" :key="index" 
+          <!-- Loading State -->
+          <div v-if="rankingLoading && rankingData.length === 0" class="text-center text-green-500 py-4">
+            <div class="animate-pulse">ランキング読み込み中...</div>
+          </div>
+          
+          <!-- Error State -->
+          <div v-else-if="rankingError && rankingData.length === 0" class="text-center text-red-500 py-4">
+            <div>エラー: {{ rankingError }}</div>
+            <button @click="fetchRanking()" class="mt-2 text-sm text-green-400 underline">再読み込み</button>
+          </div>
+          
+          <!-- Ranking List -->
+          <div v-else v-for="(user, index) in rankingData" :key="user.rank || index" 
                class="relative group h-14 transform -skew-x-12 transition-all duration-200 hover:scale-[1.02] hover:translate-x-1">
             
             <!-- Background -->
             <div :class="[
               'absolute inset-0 border-2',
-              index === 0 ? 'bg-yellow-900/40 border-yellow-500' : 
-              index === 1 ? 'bg-gray-700/40 border-gray-400' : 
-              index === 2 ? 'bg-orange-900/40 border-orange-500' : 
+              user.rank === 1 ? 'bg-yellow-900/40 border-yellow-500' : 
+              user.rank === 2 ? 'bg-gray-700/40 border-gray-400' : 
+              user.rank === 3 ? 'bg-orange-900/40 border-orange-500' : 
               'bg-gray-900/40 border-green-900'
             ]"></div>
             
@@ -507,11 +729,14 @@ onUnmounted(() => {
               <div class="flex items-center gap-3">
                 <div :class="[
                   'font-black text-xl italic w-8 text-center',
-                  index === 0 ? 'text-yellow-400 text-2xl' : 
-                  index === 1 ? 'text-gray-300' : 
-                  index === 2 ? 'text-orange-400' : 'text-green-700'
-                ]">{{ index + 1 }}</div>
-                <div class="font-bold text-sm md:text-base truncate max-w-[120px]">{{ user.name }}</div>
+                  user.rank === 1 ? 'text-yellow-400 text-2xl' : 
+                  user.rank === 2 ? 'text-gray-300' : 
+                  user.rank === 3 ? 'text-orange-400' : 'text-green-700'
+                ]">{{ user.rank }}</div>
+                <div class="font-bold text-sm md:text-base truncate max-w-[120px] flex items-center gap-1">
+                  {{ user.name }}
+                  <span v-if="user.isPresident" class="text-yellow-400 text-xs">👑</span>
+                </div>
               </div>
               <div class="font-mono font-bold text-green-400 text-sm">
                 {{ user.points.toLocaleString() }} <span class="text-[10px] text-gray-500">PTS</span>
