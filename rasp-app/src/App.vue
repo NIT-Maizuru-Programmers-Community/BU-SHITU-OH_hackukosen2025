@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import ArtPanelContent from './components/ArtPanel/ArtPanelContent.vue'
 
 // Import audio files
 import timerSound from './timer.mp3'
@@ -792,20 +793,23 @@ onUnmounted(() => {
       
       <!-- LEFT: Art Panel -->
       <section class="flex-[3] relative flex flex-col min-h-0">
-        <div class="w-full h-full border-4 border-white bg-gray-900 relative shadow-[0_0_20px_rgba(0,255,0,0.1)] overflow-hidden group">
+        <div class="w-full h-full border-4 border-purple-500 bg-gray-900 relative shadow-[0_0_20px_rgba(147,51,234,0.3)] overflow-hidden">
           <!-- Corner Deco -->
-          <div class="absolute top-0 left-0 w-16 h-16 bg-green-600 z-20 clip-path-triangle"></div>
-          <div class="absolute bottom-0 right-0 w-16 h-16 bg-green-600 z-20 clip-path-triangle-br"></div>
+          <div class="absolute top-0 left-0 w-16 h-16 bg-purple-600 z-20 clip-path-triangle"></div>
+          <div class="absolute bottom-0 right-0 w-16 h-16 bg-purple-600 z-20 clip-path-triangle-br"></div>
           
-          <!-- Content Area -->
-          <div class="w-full h-full flex items-center justify-center relative">
-            <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#00ff00 1px, transparent 1px); background-size: 20px 20px;"></div>
-            <div class="text-center z-10">
-              <div class="text-7xl mb-6 text-white/50">🖼️</div>
-              <h2 class="text-2xl font-bold text-green-500 bg-black px-6 py-2 transform -skew-x-12 border border-green-500">
-                ART PANEL AREA
+          <!-- Header -->
+          <div class="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+            <div class="bg-black/80 border-2 border-purple-500 px-6 py-2 transform -skew-x-12">
+              <h2 class="text-xl font-black italic text-purple-400 transform skew-x-12 tracking-wider">
+                🎨 ART PANEL
               </h2>
             </div>
+          </div>
+          
+          <!-- Art Panel Content -->
+          <div class="w-full h-full flex items-center justify-center pt-12">
+            <ArtPanelContent />
           </div>
         </div>
       </section>

@@ -1041,6 +1041,37 @@ async def get_today_attendance_count():
         }
 
 
+@app.get("/api/attendance/count")
+async def get_attendance_count():
+    """アートパネル用：今日のログイン人数取得"""
+    try:
+        result = fetch_today_attendance_count()
+        
+        if result['success']:
+            return {
+                'success': True,
+                'data': {
+                    'count': result['data'].get('count', 0)
+                }
+            }
+        else:
+            # エラー時はダミー値を返す
+            return {
+                'success': True,
+                'data': {
+                    'count': 0
+                }
+            }
+    except Exception as e:
+        print(f"Attendance count API error: {e}")
+        return {
+            'success': True,
+            'data': {
+                'count': 0
+            }
+        }
+
+
 # レース実行用（bushituoh.pyを使用）
 import sys
 import os
