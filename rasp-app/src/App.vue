@@ -47,9 +47,9 @@ let musicAudio = null
 
 // Race participants (using betOptions as racers)
 const racers = [
-  { id: 1, icon: '🔥', name: 'ファイヤー', color: 'from-red-600 to-orange-500', progress: 0 },
-  { id: 2, icon: '⚡', name: 'サンダー', color: 'from-yellow-500 to-yellow-300', progress: 0 },
-  { id: 3, icon: '💧', name: 'ウォーター', color: 'from-blue-600 to-cyan-400', progress: 0 }
+  { id: 1, icon: '🇨', name: 'C言語', color: 'from-blue-700 to-blue-500', progress: 0 },
+  { id: 2, icon: '🐍', name: 'Python', color: 'from-yellow-500 to-green-500', progress: 0 },
+  { id: 3, icon: '🟨', name: 'JavaScript', color: 'from-yellow-400 to-yellow-300', progress: 0 }
 ]
 
 // Points by ranking
@@ -57,9 +57,9 @@ const pointsByRank = [1000, 500, 100]
 
 // Bet options
 const betOptions = [
-  { id: 1, icon: '🔥', name: 'ファイヤー', color: 'from-red-600 to-orange-500', border: 'border-red-500' },
-  { id: 2, icon: '⚡', name: 'サンダー', color: 'from-yellow-500 to-yellow-300', border: 'border-yellow-400' },
-  { id: 3, icon: '💧', name: 'ウォーター', color: 'from-blue-600 to-cyan-400', border: 'border-blue-400' }
+  { id: 1, icon: '🇨', name: 'C言語', color: 'from-blue-700 to-blue-500', border: 'border-blue-500' },
+  { id: 2, icon: '🐍', name: 'Python', color: 'from-yellow-500 to-green-500', border: 'border-green-400' },
+  { id: 3, icon: '🟨', name: 'JavaScript', color: 'from-yellow-400 to-yellow-300', border: 'border-yellow-400' }
 ]
 
 let timer
@@ -198,9 +198,9 @@ const submitRaceResult = async (results) => {
   try {
     // キャラクターIDのマッピング
     const characterIdMap = {
-      'ファイヤー': 'fire',
-      'サンダー': 'thunder',
-      'ウォーター': 'water'
+      'C言語': 'c',
+      'Python': 'python',
+      'JavaScript': 'javascript'
     }
     
     const characters = results.map(result => ({
