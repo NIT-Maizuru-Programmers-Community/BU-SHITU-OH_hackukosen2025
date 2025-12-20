@@ -1083,9 +1083,9 @@ if PYTHON_DIR not in sys.path:
 
 # キャラクターマッピング（勝者番号 → キャラクター情報）
 WINNER_MAPPING = {
-    1: {'characterId': 'c', 'name': 'C言語', 'emoji': '🇨'},
-    2: {'characterId': 'python', 'name': 'Python', 'emoji': '🐍'},
-    3: {'characterId': 'javascript', 'name': 'JavaScript', 'emoji': '🟨'}
+    1: {'characterId': 'racer1', 'name': '1番', 'emoji': '❶'},
+    2: {'characterId': 'racer2', 'name': '2番', 'emoji': '❷'},
+    3: {'characterId': 'racer3', 'name': '3番', 'emoji': '❸'}
 }
 
 

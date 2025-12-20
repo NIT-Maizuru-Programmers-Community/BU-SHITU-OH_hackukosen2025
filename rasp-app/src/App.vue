@@ -1259,16 +1259,16 @@ onUnmounted(() => {
                   
                   <!-- Supporters -->
                   <div class="mt-4 text-center px-2">
-                    <div v-if="getRacerSupporters(racer.id).length > 0" class="text-sm text-gray-200">
-                      <div class="text-yellow-300">🎯 応援者</div>
-                      <div class="text-xs mt-1 max-h-16 overflow-y-auto">
+                    <div v-if="getRacerSupporters(racer.id).length > 0" class="text-sm">
+                      <div class="text-black font-bold">🎯 応援者</div>
+                      <div class="text-xs mt-1 max-h-16 overflow-y-auto text-black font-semibold">
                         {{ getRacerSupporters(racer.id).join(', ') }}
                       </div>
-                      <div class="text-xs text-gray-400 mt-1">
+                      <div class="text-xs text-gray-800 mt-1 font-bold">
                         ({{ getRacerSupporters(racer.id).length }}名)
                       </div>
                     </div>
-                    <div v-else class="text-xs text-gray-400 opacity-70">
+                    <div v-else class="text-xs text-gray-700 opacity-70 font-medium">
                       応援者なし
                     </div>
                   </div>
